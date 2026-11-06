@@ -19,15 +19,50 @@ function compareVersions(left, right) {
   return 0;
 }
 
-function makeUpdateItem(name, current, latest, url) {
+function makeReleaseCard(label, release) {
+  const section = document.createElement("section");
+  section.className = "release-card";
+  const heading = document.createElement("h4");
+  heading.textContent = `${label} ${release?.version ?? ""}`.trim();
+  const summary = document.createElement("p");
+  summary.textContent = (release?.summary ?? "该版本的发布说明暂不可用。")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^\s*[-*]\s+/gm, "• ");
+  section.append(heading, summary);
+  if (release?.url) {
+    const link = document.createElement("a");
+    link.href = release.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "查看上游说明 / 差异 →";
+    section.append(link);
+  }
+  return section;
+}
+
+function makeUpdateItem(entry, comparison) {
   const item = document.createElement("li");
   const link = document.createElement("a");
-  link.href = url;
-  link.textContent = name;
+  link.href = entry.url;
+  link.textContent = entry.name;
   const arrow = document.createElement("span");
   arrow.className = "version-arrow";
-  arrow.textContent = `${current} → ${latest}`;
-  item.append(link, arrow);
+  arrow.textContent = `${entry.current} → ${entry.latest}`;
+  const top = document.createElement("div");
+  top.className = "version-update-top";
+  top.append(link, arrow);
+  const details = document.createElement("details");
+  details.className = "version-compare";
+  const toggle = document.createElement("summary");
+  toggle.textContent = "新旧版特性对比";
+  const grid = document.createElement("div");
+  grid.className = "release-compare-grid";
+  grid.append(makeReleaseCard("旧版", comparison?.old), makeReleaseCard("新版", comparison?.latest));
+  details.append(toggle, grid);
+  item.append(top, details);
   return item;
 }
 
@@ -50,10 +85,10 @@ async function showVersionStatus() {
       badge.textContent = `新版 ${latest}`;
       node.append(badge);
       node.setAttribute("aria-label", `${name}，当前标注 ${node.dataset.version}，最新稳定版 ${latest}`);
-      updates.push({ name, current: node.dataset.version, latest, url: node.dataset.packageUrl });
+      updates.push({ package: node.dataset.package, name, current: node.dataset.version, latest, url: node.dataset.packageUrl });
     });
 
-    list.replaceChildren(...updates.map((entry) => makeUpdateItem(entry.name, entry.current, entry.latest, entry.url)));
+    list.replaceChildren(...updates.map((entry) => makeUpdateItem(entry, snapshot.comparisons?.[entry.package])));
     notice.classList.toggle("version-status-current", updates.length === 0);
     notice.classList.remove("version-status-error");
     summary.textContent = updates.length ? `发现 ${updates.length} 项可更新版本` : "当前标注版本均为最新稳定版";
@@ -67,4 +102,5 @@ async function showVersionStatus() {
 }
 
 showVersionStatus();
+
 
