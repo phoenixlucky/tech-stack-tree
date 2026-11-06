@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f6f2">
+    <meta name="description" content="Tauri 桌面应用技术栈架构：Rust 核心、TypeScript MCP Adapter 与 Vue 前端。">
+    <title>Tauri 技术栈 · 架构图谱</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="#top" aria-label="Tauri 技术栈首页">
+          <span class="brand-mark" aria-hidden="true">T</span>
+          <span>STACK ATLAS</span>
+        </a>
+        <span class="header-note">桌面应用 · 技术架构</span>
+      </header>
+
+      <main id="top">
+        <section class="intro" aria-labelledby="page-title">
+          <p class="eyebrow"><span class="eyebrow-dot"></span> APPLICATION BLUEPRINT <span class="eyebrow-line"></span> 01 / 01</p>
+          <div class="intro-row">
+            <div>
+              <h1 id="page-title">Tauri <span>技术栈</span></h1>
+              <p class="intro-copy">从系统能力到界面呈现，梳理桌面应用的核心模块与通信边界。</p>
+            </div>
+            <div class="version-pill"><span class="status-dot"></span> Tauri <strong>2.12.3</strong> <span>Stable</span></div>
+          </div>
+        </section>
+
+        <section class="architecture" aria-label="Tauri 技术栈架构">
+          <div class="root-node">
+            <span class="root-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="root-label">DESKTOP APP SHELL</span>
+            <strong>Tauri</strong>
+            <span class="root-version">2.12.3 Stable</span>
+          </div>
+          <div class="trunk" aria-hidden="true"></div>
+
+          <div class="branch-grid">
+            <section class="branch branch-rust" aria-labelledby="rust-title">
+              <div class="branch-heading">
+                <span class="branch-index">01</span>
+                <div>
+                  <p class="branch-kicker">NATIVE CORE</p>
+                  <h2 id="rust-title">Rust <span class="version-inline">1.99.0 stable</span></h2>
+                </div>
+                <span class="branch-glyph" aria-hidden="true">R</span>
+              </div>
+
+              <div class="module-list">
+                <section class="module">
+                  <h3>Domain / Service Layer</h3>
+                  <p>核心业务逻辑</p>
+                </section>
+                <section class="module">
+                  <h3>System APIs</h3>
+                  <ul class="tag-list"><li>Filesystem</li><li>Database</li><li>Crypto</li><li>OS APIs</li></ul>
+                </section>
+                <section class="module module-compact">
+                  <h3>Async / Background Work</h3>
+                  <ul class="tag-list"><li>Tokio</li></ul>
+                </section>
+                <section class="module">
+                  <h3>Infrastructure</h3>
+                  <ul class="tag-list"><li>serde</li><li>tracing</li><li>thiserror</li><li>anyhow</li></ul>
+                </section>
+                <section class="module module-compact">
+                  <h3>IPC Bridge</h3>
+                  <p>与 TypeScript MCP Adapter 通信</p>
+                </section>
+              </div>
+            </section>
+
+            <section class="branch branch-mcp" aria-labelledby="mcp-title">
+              <div class="branch-heading">
+                <span class="branch-index">02</span>
+                <div>
+                  <p class="branch-kicker">INDEPENDENT SIDECAR</p>
+                  <h2 id="mcp-title">TypeScript MCP Adapter</h2>
+                </div>
+                <span class="branch-glyph glyph-mcp" aria-hidden="true">M</span>
+              </div>
+
+              <div class="module-list">
+                <section class="module sdk-module">
+                  <div class="module-title-row">
+                    <h3>Official MCP TypeScript SDK</h3>
+                    <span class="mini-badge">v2.x</span>
+                  </div>
+                  <div class="sdk-grid">
+                    <div class="sdk-card">
+                      <span class="sdk-kind">SERVER</span>
+                      <h4>@modelcontextprotocol/server</h4>
+                      <p class="sdk-name">MCP Server</p>
+                      <ul class="plain-list"><li>Tools</li><li>Resources</li><li>Prompts</li></ul>
+                    </div>
+                    <div class="sdk-card">
+                      <span class="sdk-kind">CLIENT</span>
+                      <h4>@modelcontextprotocol/client</h4>
+                      <p class="sdk-name">MCP Client</p>
+                      <ul class="plain-list"><li>Connect External MCP Servers</li><li>Call Tools</li><li>Read Resources</li></ul>
+                    </div>
+                  </div>
+                </section>
+                <section class="module">
+                  <h3>Schema</h3>
+                  <ul class="tag-list"><li>Zod</li><li>Standard Schema</li></ul>
+                </section>
+                <section class="module">
+                  <h3>Transport</h3>
+                  <ul class="tag-list"><li>stdio</li><li>Streamable HTTP</li></ul>
+                </section>
+                <section class="module module-compact">
+                  <h3>IPC Client</h3>
+                  <p>调用 Rust 核心业务服务</p>
+                </section>
+              </div>
+            </section>
+
+            <section class="branch branch-vue" aria-labelledby="vue-title">
+              <div class="branch-heading">
+                <span class="branch-index">03</span>
+                <div>
+                  <p class="branch-kicker">USER INTERFACE</p>
+                  <h2 id="vue-title">Vue <span class="version-inline">3.5.43 stable</span></h2>
+                </div>
+                <span class="branch-glyph glyph-vue" aria-hidden="true">V</span>
+              </div>
+
+              <div class="module-list">
+                <section class="module">
+                  <h3>Core Tooling</h3>
+                  <ul class="stack-list">
+                    <li><span>TypeScript</span><strong>6.0.3</strong></li>
+                    <li><span>Vite</span><strong>8.3.4</strong></li>
+                    <li><span>Pinia</span><strong>4.0.3</strong></li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3>Optional</h3>
+                  <ul class="stack-list">
+                    <li><span>Vue Router</span><strong>5.3.1</strong></li>
+                    <li><span>Tailwind CSS</span><strong>4.3.3</strong></li>
+                  </ul>
+                  <p class="optional-note">需要时按项目需求引入</p>
+                </section>
+                <section class="module module-compact">
+                  <h3>UI 组件库</h3>
+                  <p>按需求单独选型</p>
+                </section>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>TAURI DESKTOP STACK</span>
+        <span>Rust <b>×</b> MCP <b>×</b> Vue</span>
+      </footer>
+    </div>
+  </body>
+</html>
+
