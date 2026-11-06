@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 将用户提供的技术栈制作成浅色、响应式网页，并在每日版本巡检发现更新时提醒访客。
+**Goal:** 将用户提供的技术栈制作成浅色、响应式网页，并在每日版本巡检发现更新时提醒访客，提供旧/新版本特性对比。
 
-**Architecture:** 根目录包含单页 HTML/CSS 和无依赖浏览器脚本。Node.js 内置 fetch 每日读取 Rust 官方稳定发布、crates.io 与 npm 当前稳定版本，输出 JSON 供网页对比已标版本。GitHub Actions 在推送和每日巡检时发布 Pages artifact。
+**Architecture:** 根目录包含单页 HTML/CSS 和无依赖浏览器脚本。Node.js 内置 fetch 每日读取 Rust 官方稳定发布、crates.io 与 npm 当前稳定版本，输出 JSON 供网页对比已标版本和渲染上游旧/新版本发布说明。GitHub Actions 在推送和每日巡检时发布 Pages artifact。
 
 **Tech Stack:** HTML5、CSS、原生 JavaScript、Node.js built-in fetch、GitHub Actions、GitHub Pages。
 
@@ -34,7 +34,7 @@
 **Files:**
 - Create: `index.html` — 语义结构、技术内容、版本标记和工具提示。
 - Create: `styles.css` — 浅色视觉、树形层级、hover/focus 提示和响应式布局。
-- Create: `version-alerts.js` — 显示每日版本检查结果与更新提示。
+- Create: `version-alerts.js` — 显示每日版本检查结果、更新提示和可展开的新旧版本特性对比。
 
 **Interfaces:**
 - `index.html` 相对引用 `styles.css`、`version-alerts.js`、`latest-versions.json`。
@@ -53,7 +53,7 @@
 - Generate: `latest-versions.json` — 每次 workflow 运行生成，不提交旧数据快照。
 
 **Interfaces:**
-- `fetch-latest-versions.mjs` 输出 `{ checkedAt, versions }`。
+- `fetch-latest-versions.mjs` 输出 `{ checkedAt, versions, comparisons }`，从上游 changelog/release 读取发布说明；没有摘要时提供版本差异链接。
 - Workflow 执行版本查询后上传根目录静态文件与 JSON，不安装依赖或执行构建。
 - 版本查询失败则 job 失败，已发布的 Pages 版本保持不变。
 
@@ -61,4 +61,5 @@
 - [ ] **Step 2:** 配置 `push`、每日 schedule 和手动触发；确保 job 有 `contents: read`、`pages: write`、`id-token: write` 权限并限制部署到 `main`。
 - [ ] **Step 3:** 核对脚本生成的 JSON、数据源、workflow 权限、分支和子路径部署设置。
 - [ ] **Step 4:** 推送更新并确认 GitHub Actions 部署成功，检查 HTML、CSS、JS 与版本 JSON 均可从 Pages URL 读取。
+
 
