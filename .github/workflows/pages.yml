@@ -29,6 +29,8 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v7
       - name: Check latest stable versions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/fetch-latest-versions.mjs
       - name: Configure Pages
         uses: actions/configure-pages@v6
@@ -39,4 +41,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5.0.1
+
 
