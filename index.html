@@ -7,6 +7,7 @@
     <meta name="description" content="Tauri 桌面应用技术栈架构：Rust 核心、TypeScript MCP Adapter 与 Vue 前端。">
     <title>Tauri 技术栈 · 架构图谱</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="version-alerts.js" defer></script>
   </head>
   <body>
     <div class="page-shell">
@@ -25,9 +26,15 @@
             <div>
               <h1 id="page-title">Tauri <span>技术栈</span></h1>
               <p class="intro-copy">从系统能力到界面呈现，梳理桌面应用的核心模块与通信边界。</p>
+              <p class="version-note">悬停或聚焦条目查看说明 · 依赖版本每日检查</p>
             </div>
-            <div class="version-pill"><span class="status-dot"></span> Tauri <strong>2.12.3</strong> <span>Stable</span></div>
+            <div class="version-pill"><span class="status-dot"></span> Tauri <strong class="versioned tech-tip" tabindex="0" aria-label="Tauri 2.12.3 stable，跨平台桌面应用框架。" data-tip="跨平台桌面应用框架；Rust 负责原生核心，Web 前端负责界面。" data-package="tauri" data-version="2.12.3" data-package-name="Tauri" data-package-url="https://crates.io/crates/tauri">2.12.3</strong> <span>Stable</span></div>
           </div>
+          <aside id="version-notice" class="version-notice" role="status" aria-live="polite" aria-atomic="true" hidden>
+            <div class="notice-heading"><span class="notice-icon" aria-hidden="true">↗</span><strong id="version-summary">正在检查版本…</strong></div>
+            <p id="version-meta" class="notice-meta"></p>
+            <ul id="version-update-list" class="version-update-list"></ul>
+          </aside>
         </section>
 
         <section class="architecture" aria-label="Tauri 技术栈架构">
@@ -45,30 +52,40 @@
                 <span class="branch-index">01</span>
                 <div>
                   <p class="branch-kicker">NATIVE CORE</p>
-                  <h2 id="rust-title">Rust <span class="version-inline">1.99.0 stable</span></h2>
+                  <h2 id="rust-title" class="tech-tip" tabindex="0" aria-label="Rust 1.99.0 stable，桌面应用原生核心语言。" data-tip="系统核心语言：承载业务逻辑、系统接口和 IPC 服务。">Rust <span class="version-inline versioned" data-package="rust" data-version="1.99.0" data-package-name="Rust" data-package-url="https://blog.rust-lang.org/releases/latest/">1.99.0 stable</span></h2>
                 </div>
                 <span class="branch-glyph" aria-hidden="true">R</span>
               </div>
 
               <div class="module-list">
                 <section class="module">
-                  <h3>Domain / Service Layer</h3>
+                  <h3 class="tech-tip" tabindex="0" aria-label="Domain / Service Layer，领域与服务层，承载核心业务规则和用例编排。" data-tip="领域与服务层：承载核心业务规则、用例编排和领域服务。">Domain / Service Layer</h3>
                   <p>核心业务逻辑</p>
                 </section>
                 <section class="module">
-                  <h3>System APIs</h3>
-                  <ul class="tag-list"><li>Filesystem</li><li>Database</li><li>Crypto</li><li>OS APIs</li></ul>
+                  <h3 class="tech-tip" tabindex="0" aria-label="System APIs，系统能力访问层，具体版本由操作系统和选用的实现决定。" data-tip="系统能力访问层：把文件、数据库、加密和操作系统能力封装给业务层；其版本取决于具体实现和目标系统。">System APIs</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Filesystem，文件读写与目录操作，版本随所用库和目标系统决定。" data-tip="文件读写与目录操作。当前未指定文件系统库，版本随实现和目标系统确定。">Filesystem</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Database，本地数据持久化，数据库引擎尚未选型。" data-tip="本地数据持久化能力。当前未指定数据库引擎或驱动，因此没有单一对应版本。">Database</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Crypto，加解密与密钥相关能力，具体算法库尚未选型。" data-tip="加解密、哈希与密钥相关能力。具体算法和加密库尚未选型，版本随选型确定。">Crypto</li>
+                    <li class="tech-tip" tabindex="0" aria-label="OS APIs，操作系统原生接口，版本随目标操作系统决定。" data-tip="窗口、进程、通知等原生操作系统接口；可用能力与版本随目标系统决定。">OS APIs</li>
+                  </ul>
                 </section>
                 <section class="module module-compact">
-                  <h3>Async / Background Work</h3>
-                  <ul class="tag-list"><li>Tokio</li></ul>
+                  <h3 class="tech-tip" tabindex="0" aria-label="Async / Background Work，异步任务与后台工作。" data-tip="异步任务与后台工作：处理并发 I/O、定时任务和不应阻塞界面的工作。">Async / Background Work</h3>
+                  <ul class="tag-list"><li class="tech-tip versioned" tabindex="0" aria-label="Tokio 1.54.1，Rust 异步运行时。" data-tip="Rust 异步运行时，提供任务调度、异步 I/O 和定时器。" data-package="tokio" data-version="1.54.1" data-package-name="Tokio" data-package-url="https://crates.io/crates/tokio">Tokio <span class="version-value">1.54.1</span></li></ul>
                 </section>
                 <section class="module">
-                  <h3>Infrastructure</h3>
-                  <ul class="tag-list"><li>serde</li><li>tracing</li><li>thiserror</li><li>anyhow</li></ul>
+                  <h3 class="tech-tip" tabindex="0" aria-label="Infrastructure，基础设施依赖集合。" data-tip="基础设施依赖：为序列化、诊断和错误处理提供通用能力。">Infrastructure</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip versioned" tabindex="0" aria-label="serde 1.0.229，Rust 序列化与反序列化库。" data-tip="Rust 序列化与反序列化框架，常用于数据结构与 JSON 之间转换。" data-package="serde" data-version="1.0.229" data-package-name="serde" data-package-url="https://crates.io/crates/serde">serde <span class="version-value">1.0.229</span></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="tracing 0.1.44，结构化诊断事件与追踪。" data-tip="结构化诊断与追踪库，用于记录事件、上下文和跨任务执行信息。" data-package="tracing" data-version="0.1.44" data-package-name="tracing" data-package-url="https://crates.io/crates/tracing">tracing <span class="version-value">0.1.44</span></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="thiserror 2.0.21，派生自定义错误类型。" data-tip="通过 derive 宏简化库代码中的自定义错误类型定义。" data-package="thiserror" data-version="2.0.21" data-package-name="thiserror" data-package-url="https://crates.io/crates/thiserror">thiserror <span class="version-value">2.0.21</span></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="anyhow 1.0.104，应用层错误上下文处理。" data-tip="应用层错误处理工具，便于组合错误并附加上下文信息。" data-package="anyhow" data-version="1.0.104" data-package-name="anyhow" data-package-url="https://crates.io/crates/anyhow">anyhow <span class="version-value">1.0.104</span></li>
+                  </ul>
                 </section>
                 <section class="module module-compact">
-                  <h3>IPC Bridge</h3>
+                  <h3 class="tech-tip" tabindex="0" aria-label="IPC Bridge，跨进程通信桥。" data-tip="跨进程通信桥：让前端和 MCP sidecar 能调用 Rust 核心服务。">IPC Bridge</h3>
                   <p>与 TypeScript MCP Adapter 通信</p>
                 </section>
               </div>
@@ -79,7 +96,7 @@
                 <span class="branch-index">02</span>
                 <div>
                   <p class="branch-kicker">INDEPENDENT SIDECAR</p>
-                  <h2 id="mcp-title">TypeScript MCP Adapter</h2>
+                  <h2 id="mcp-title" class="tech-tip" tabindex="0" aria-label="TypeScript MCP Adapter，独立 sidecar，承载 MCP 服务端和客户端。" data-tip="独立 sidecar：使用官方 TypeScript MCP SDK 暴露本地能力并连接外部 MCP 服务。">TypeScript MCP Adapter</h2>
                 </div>
                 <span class="branch-glyph glyph-mcp" aria-hidden="true">M</span>
               </div>
@@ -87,34 +104,50 @@
               <div class="module-list">
                 <section class="module sdk-module">
                   <div class="module-title-row">
-                    <h3>Official MCP TypeScript SDK</h3>
+                    <h3 class="tech-tip" tabindex="0" aria-label="Official MCP TypeScript SDK，官方 TypeScript MCP SDK 2.x，拆分为 server 和 client 包。" data-tip="官方 MCP TypeScript SDK 2.x：按服务端和客户端拆分安装，提供 MCP 协议通信能力。">Official MCP TypeScript SDK</h3>
                     <span class="mini-badge">v2.x</span>
                   </div>
                   <div class="sdk-grid">
                     <div class="sdk-card">
                       <span class="sdk-kind">SERVER</span>
-                      <h4>@modelcontextprotocol/server</h4>
-                      <p class="sdk-name">MCP Server</p>
-                      <ul class="plain-list"><li>Tools</li><li>Resources</li><li>Prompts</li></ul>
+                      <h4 class="tech-tip" tabindex="0" aria-label="@modelcontextprotocol/server 2.4.0，构建 MCP 服务端。" data-tip="MCP 服务端 SDK。注册可调用的工具、可读资源和提示模板。">@modelcontextprotocol/server</h4>
+                      <span class="versioned sdk-version tech-tip" tabindex="0" aria-label="MCP Server SDK 2.4.0，当前版本。" data-tip="官方 MCP Server SDK 当前稳定版本 2.4.0。" data-package="mcp-server" data-version="2.4.0" data-package-name="MCP Server SDK" data-package-url="https://www.npmjs.com/package/@modelcontextprotocol/server">2.4.0</span>
+                      <p class="sdk-name tech-tip" tabindex="0" aria-label="MCP Server，向模型提供工具、资源和提示。" data-tip="MCP Server：对外暴露 Tools、Resources 与 Prompts。">MCP Server</p>
+                      <ul class="plain-list">
+                        <li class="tech-tip" tabindex="0" aria-label="Tools，供模型调用的操作。" data-tip="Tools：可由客户端发现并调用的操作接口。">Tools</li>
+                        <li class="tech-tip" tabindex="0" aria-label="Resources，向客户端提供的上下文数据。" data-tip="Resources：可读取的上下文内容，例如文件或状态数据。">Resources</li>
+                        <li class="tech-tip" tabindex="0" aria-label="Prompts，可复用的提示模板。" data-tip="Prompts：服务端提供的可复用提示模板。">Prompts</li>
+                      </ul>
                     </div>
                     <div class="sdk-card">
                       <span class="sdk-kind">CLIENT</span>
-                      <h4>@modelcontextprotocol/client</h4>
-                      <p class="sdk-name">MCP Client</p>
-                      <ul class="plain-list"><li>Connect External MCP Servers</li><li>Call Tools</li><li>Read Resources</li></ul>
+                      <h4 class="tech-tip" tabindex="0" aria-label="@modelcontextprotocol/client 2.4.0，连接并调用 MCP 服务端。" data-tip="MCP 客户端 SDK。连接外部 MCP server，发现并调用工具，读取资源。">@modelcontextprotocol/client</h4>
+                      <span class="versioned sdk-version tech-tip" tabindex="0" aria-label="MCP Client SDK 2.4.0，当前版本。" data-tip="官方 MCP Client SDK 当前稳定版本 2.4.0。" data-package="mcp-client" data-version="2.4.0" data-package-name="MCP Client SDK" data-package-url="https://www.npmjs.com/package/@modelcontextprotocol/client">2.4.0</span>
+                      <p class="sdk-name tech-tip" tabindex="0" aria-label="MCP Client，连接 MCP 服务。" data-tip="MCP Client：连接一个或多个 MCP 服务并交换协议消息。">MCP Client</p>
+                      <ul class="plain-list">
+                        <li class="tech-tip" tabindex="0" aria-label="Connect External MCP Servers，连接外部 MCP 服务。" data-tip="建立到外部 MCP 服务的连接并完成初始化。">Connect External MCP Servers</li>
+                        <li class="tech-tip" tabindex="0" aria-label="Call Tools，调用远端工具。" data-tip="发现并调用远端服务提供的 Tools。">Call Tools</li>
+                        <li class="tech-tip" tabindex="0" aria-label="Read Resources，读取远端资源。" data-tip="读取远端 MCP 服务公开的 Resources。">Read Resources</li>
+                      </ul>
                     </div>
                   </div>
                 </section>
                 <section class="module">
-                  <h3>Schema</h3>
-                  <ul class="tag-list"><li>Zod</li><li>Standard Schema</li></ul>
+                  <h3 class="tech-tip" tabindex="0" aria-label="Schema，MCP 工具输入数据的校验与类型约定。" data-tip="Schema：在工具调用边界校验输入，并让 TypeScript 获得对应类型。">Schema</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Zod 4.6.7，TypeScript schema 校验与类型推断。" data-tip="TypeScript 优先的 schema 校验库，可在运行时解析输入并推断静态类型。" data-package="zod" data-version="4.6.7" data-package-name="Zod" data-package-url="https://www.npmjs.com/package/zod">Zod <span class="version-value">4.6.7</span></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Standard Schema 1.1.0，不同验证库间的 schema 互操作规范。" data-tip="用于在不同验证库之间交换 schema 的通用接口规范。" data-package="standard-schema" data-version="1.1.0" data-package-name="Standard Schema" data-package-url="https://www.npmjs.com/package/@standard-schema/spec">Standard Schema <span class="version-value">1.1.0</span></li>
+                  </ul>
                 </section>
                 <section class="module">
-                  <h3>Transport</h3>
-                  <ul class="tag-list"><li>stdio</li><li>Streamable HTTP</li></ul>
+                  <h3 class="tech-tip" tabindex="0" aria-label="Transport，MCP 消息的传输方式。" data-tip="传输层：选择 sidecar 与客户端之间承载 MCP 消息的通道。">Transport</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="stdio，通过标准输入输出传输 MCP 消息，不对应独立包版本。" data-tip="stdio：通过进程标准输入/输出交换 MCP 消息；这是传输方式，不是独立软件包。">stdio</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Streamable HTTP，基于 HTTP 的 MCP 传输方式，不对应独立包版本。" data-tip="Streamable HTTP：通过 HTTP 请求和流式响应传递 MCP 消息；协议版本由 MCP 规范确定。">Streamable HTTP</li>
+                  </ul>
                 </section>
                 <section class="module module-compact">
-                  <h3>IPC Client</h3>
+                  <h3 class="tech-tip" tabindex="0" aria-label="IPC Client，调用 Rust 核心业务服务的客户端。" data-tip="IPC Client：封装 adapter 到 Rust 核心业务服务的请求与响应。">IPC Client</h3>
                   <p>调用 Rust 核心业务服务</p>
                 </section>
               </div>
@@ -125,30 +158,30 @@
                 <span class="branch-index">03</span>
                 <div>
                   <p class="branch-kicker">USER INTERFACE</p>
-                  <h2 id="vue-title">Vue <span class="version-inline">3.5.43 stable</span></h2>
+                  <h2 id="vue-title" class="tech-tip" tabindex="0" aria-label="Vue 3.5.43 stable，桌面应用用户界面框架。" data-tip="用户界面框架：负责组织桌面应用的组件、页面和交互。">Vue <span class="version-inline versioned" data-package="vue" data-version="3.5.43" data-package-name="Vue" data-package-url="https://www.npmjs.com/package/vue">3.5.43 stable</span></h2>
                 </div>
                 <span class="branch-glyph glyph-vue" aria-hidden="true">V</span>
               </div>
 
               <div class="module-list">
                 <section class="module">
-                  <h3>Core Tooling</h3>
+                  <h3 class="tech-tip" tabindex="0" aria-label="Core Tooling，前端核心语言、构建工具和状态管理。" data-tip="核心工具：提供前端类型系统、开发/构建流程和应用状态管理。">Core Tooling</h3>
                   <ul class="stack-list">
-                    <li><span>TypeScript</span><strong>6.0.3</strong></li>
-                    <li><span>Vite</span><strong>8.3.4</strong></li>
-                    <li><span>Pinia</span><strong>4.0.3</strong></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="TypeScript 6.0.3，JavaScript 的静态类型扩展。" data-tip="JavaScript 的静态类型扩展，在构建阶段检查类型并提供编辑器支持。" data-package="typescript" data-version="6.0.3" data-package-name="TypeScript" data-package-url="https://www.npmjs.com/package/typescript"><span>TypeScript</span><strong class="version-value">6.0.3</strong></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Vite 8.3.4，前端开发服务器和构建工具。" data-tip="前端开发服务器与打包工具，提供本地热更新和生产构建。" data-package="vite" data-version="8.3.4" data-package-name="Vite" data-package-url="https://www.npmjs.com/package/vite"><span>Vite</span><strong class="version-value">8.3.4</strong></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Pinia 4.0.3，Vue 状态管理库。" data-tip="Vue 应用的状态管理库，用于定义和共享应用状态。" data-package="pinia" data-version="4.0.3" data-package-name="Pinia" data-package-url="https://www.npmjs.com/package/pinia"><span>Pinia</span><strong class="version-value">4.0.3</strong></li>
                   </ul>
                 </section>
                 <section class="module">
-                  <h3>Optional</h3>
+                  <h3 class="tech-tip" tabindex="0" aria-label="Optional，按项目需求引入。" data-tip="可选依赖：仅在项目需要路由或实用类 CSS 时加入。">Optional</h3>
                   <ul class="stack-list">
-                    <li><span>Vue Router</span><strong>5.3.1</strong></li>
-                    <li><span>Tailwind CSS</span><strong>4.3.3</strong></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Vue Router 5.3.1，Vue 应用路由，需要时使用。" data-tip="Vue 官方路由库，用于页面路由与导航；原清单标记为按需使用。" data-package="vue-router" data-version="5.3.1" data-package-name="Vue Router" data-package-url="https://www.npmjs.com/package/vue-router"><span>Vue Router</span><strong class="version-value">5.3.1</strong></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Tailwind CSS 4.3.3，实用类 CSS 框架，需要时使用。" data-tip="实用类优先的 CSS 框架；原清单标记为按需使用。" data-package="tailwindcss" data-version="4.3.3" data-package-name="Tailwind CSS" data-package-url="https://www.npmjs.com/package/tailwindcss"><span>Tailwind CSS</span><strong class="version-value">4.3.3</strong></li>
                   </ul>
                   <p class="optional-note">需要时按项目需求引入</p>
                 </section>
                 <section class="module module-compact">
-                  <h3>UI 组件库</h3>
+                  <h3 class="tech-tip" tabindex="0" aria-label="UI 组件库，按需求单独选型，当前尚未指定具体包。" data-tip="UI 组件库尚未指定具体产品，因此没有统一对应版本；按项目需求选型后再跟踪版本。">UI 组件库</h3>
                   <p>按需求单独选型</p>
                 </section>
               </div>
