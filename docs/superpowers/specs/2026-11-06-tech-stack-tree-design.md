@@ -24,7 +24,7 @@
 
 ## 实现与发布
 
-使用静态 HTML、CSS 与少量原生 JavaScript，不增加运行时或构建依赖。网页作为仓库根路径入口，页面资源采用相对路径，使其能运行于 `https://phoenixlucky.github.io/tech-stack-tree/` 子路径。GitHub Actions 每日从 Rust 官方发布源、crates.io 与 npm 获取最新稳定版本，与页面标注版本比较，在页面显示更新提醒；同一 workflow 通过官方 Pages artifact 部署 `main` 分支上的站点。若版本源读取失败则部署失败并保留上一版站点。
+使用静态 HTML、CSS 与少量原生 JavaScript，不增加运行时或构建依赖。网页作为仓库根路径入口，页面资源采用相对路径，使其能运行于 `https://phoenixlucky.github.io/tech-stack-tree/` 子路径。GitHub Actions 每日从 Rust 官方发布源、crates.io 与 npm 获取最新稳定版本，与页面标注版本比较，在页面显示更新提醒及可展开的旧/新版本发布说明摘要；摘要来自上游 changelog 或 release，若不可读取则明确说明并链接到上游版本差异。同一 workflow 通过官方 Pages artifact 部署 `main` 分支上的站点。若版本源读取失败则部署失败并保留上一版站点。
 
 ## 验收标准
 
@@ -33,9 +33,10 @@
 - 不需要安装运行时依赖或构建工具即可本地预览。
 - GitHub Pages workflow 能将仓库静态文件部署到项目子路径。
 - 页面使用语义化 HTML，并保证文字与背景有足够对比度、链接和焦点可见。`title`/说明卡同时支持鼠标悬停和键盘焦点。
-- 每日版本巡检写入 JSON 状态，网页显示检查时间、版本更新数量及逐项当前/最新版本。
+- 每日版本巡检写入 JSON 状态，网页显示检查时间、版本更新数量及逐项当前/最新版本；展开单项提醒可并排查看旧版和新版发布说明摘要。
 
 ## 不在范围内
 
 不添加搜索、筛选、折叠树、深色模式、复杂动画、后端服务、邮件或消息推送。
+
 
