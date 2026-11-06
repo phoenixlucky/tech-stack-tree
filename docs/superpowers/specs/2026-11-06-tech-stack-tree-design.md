@@ -17,10 +17,10 @@
 
 1. Tauri 作为桌面应用根节点。
 2. Rust 1.99.0 stable 分支包含 Domain / Service Layer、System APIs、Async / Background Work、Infrastructure、IPC Bridge。
-3. 独立 TypeScript MCP Adapter 分支包含 Official MCP TypeScript SDK v2.x 的 Server / Client、Zod / Standard Schema、stdio / Streamable HTTP Transport、IPC Client。
+3. 独立 TypeScript MCP Adapter 分支包含 Official MCP TypeScript SDK v2.x 的 Server / Client、Zod / Standard Schema、JSON-RPC 2.0 消息协议、stdio / Streamable HTTP 传输及 IPC Client，并说明协议版本和能力在初始化时协商、旧 HTTP + SSE 用于兼容迁移。
 4. Vue 3.5.43 stable 分支包含 TypeScript、Vite、Pinia，以及按需采用的 Vue Router、Tailwind CSS 与 UI 组件库说明。
 
-通过卡片层级、分组标签和连接关系体现结构，保持原始组件名与职责内容。宽屏下并排展示主要分支，窄屏下改为纵向阅读。每个技术项可鼠标悬停或键盘聚焦查看简短介绍；明确版本的条目展示版本号，未在原始清单标注版本的包补充为官方源当前最新稳定版，并标出检查日期。操作系统能力、传输协议和未选型的组件库等非具体发布包需说明“版本随系统/选型确定”，不伪造包版本。
+通过卡片层级、分组标签和连接关系体现结构，补充 Vue 界面、Tauri IPC、Rust 核心和 Sidecar 之间的调用路径，以及各主要分支的职责说明。宽屏下并排展示主要分支，窄屏下改为纵向阅读。每个技术项可鼠标悬停或键盘聚焦查看简短介绍；明确版本的条目展示版本号，未在原始清单标注版本的包补充为官方源当前最新稳定版，并标出检查日期。操作系统能力、传输方式和未选型的组件库等非具体发布包需说明不对应独立软件包版本；MCP 协议修订版由连接协商，不固定为某个软件包版本。
 
 ## 实现与发布
 
@@ -38,5 +38,6 @@
 ## 不在范围内
 
 不添加搜索、筛选、折叠树、深色模式、复杂动画、后端服务、邮件或消息推送。
+
 
 
