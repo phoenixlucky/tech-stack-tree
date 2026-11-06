@@ -110,10 +110,19 @@ h1 span { color: var(--green); }
 .notice-icon { width: 21px; height: 21px; display: grid; place-items: center; border-radius: 7px; color: #795817; background: #f8e7bd; font-size: 13px; }
 .notice-meta { margin: 5px 0 0; color: #5c4c2d; font-size: 10px; }
 .version-update-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 9px 0 0; padding: 0; list-style: none; }
-.version-update-list li { padding: 4px 7px; border: 1px solid #f0dfbf; border-radius: 6px; color: #4d422f; background: rgba(255,255,255,.7); font-size: 10px; }
+.version-update-list li { flex: 1 1 100%; min-width: 0; padding: 9px 11px; border: 1px solid #f0dfbf; border-radius: 8px; color: #4d422f; background: rgba(255,255,255,.7); font-size: 10px; }
 .version-update-list a { color: #294f44; font-weight: 700; text-decoration-thickness: 1px; text-underline-offset: 2px; }
 .version-update-list a:focus-visible { outline: 2px solid #34796d; outline-offset: 2px; }
 .version-update-list .version-arrow { padding: 0 3px; color: #6f5d3c; }
+.version-update-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.version-compare { margin-top: 8px; border-top: 1px solid #ede3d0; }
+.version-compare summary { width: fit-content; padding: 7px 0 2px; color: #4d5b4f; cursor: pointer; font-size: 9px; font-weight: 700; }
+.version-compare summary:focus-visible { outline: 2px solid #34796d; outline-offset: 2px; border-radius: 3px; }
+.release-compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 7px; }
+.release-card { min-width: 0; padding: 9px 10px; border: 1px solid #e8e7dd; border-radius: 7px; background: #fff; }
+.release-card h4 { margin: 0 0 5px; color: #30453b; font-size: 9px; }
+.release-card p { margin: 0; color: #58635a; font-size: 9px; line-height: 1.55; white-space: pre-line; overflow-wrap: anywhere; }
+.release-card a { display: inline-block; margin-top: 6px; color: #345e50; font-size: 9px; }
 .version-status-error { border-color: #e4c7c1; background: #fff2ef; }
 .version-status-error .notice-heading, .version-status-error .notice-meta { color: #713b31; }
 .version-status-current { border-color: #cfe0d5; background: #f2f8f3; }
@@ -150,6 +159,7 @@ a:focus-visible { outline: 3px solid #34796d; outline-offset: 4px; border-radius
   .tech-tip::after { max-width: min(280px, calc(100vw - 40px)); }
   .version-notice { padding: 12px; }
   .version-update-list { gap: 5px; }
+  .release-compare-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
