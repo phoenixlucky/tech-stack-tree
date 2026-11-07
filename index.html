@@ -3,36 +3,44 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f5f6f2">
-    <meta name="description" content="Tauri 桌面应用技术栈架构：Rust 核心、TypeScript MCP Adapter 与 Vue 前端。">
-    <title>Tauri 技术栈 · 架构图谱</title>
+    <meta name="theme-color" content="#f5f7f2">
+    <meta name="description" content="Ethan Wilkins 技术栈：Tauri 桌面应用架构，Rust 核心、TypeScript MCP Adapter 与 Vue 前端。">
+    <title>Ethan Wilkins 技术栈 · 架构图谱</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="tooltips.js" defer></script>
     <script src="version-alerts.js" defer></script>
   </head>
   <body>
     <div class="page-shell">
       <header class="site-header">
-        <a class="brand" href="#top" aria-label="Tauri 技术栈首页">
-          <span class="brand-mark" aria-hidden="true">T</span>
-          <span>STACK ATLAS</span>
+        <a class="brand" href="#top" aria-label="Ethan Wilkins 技术栈首页">
+          <span class="brand-mark" aria-hidden="true">E</span>
+          <span>ETHAN WILKINS</span>
         </a>
-        <span class="header-note">桌面应用 · 技术架构</span>
+        <span class="header-note"><span class="header-pulse" aria-hidden="true"></span>桌面应用 · 技术架构</span>
       </header>
 
       <main id="top">
         <section class="intro" aria-labelledby="page-title">
           <p class="eyebrow"><span class="eyebrow-dot"></span> APPLICATION BLUEPRINT <span class="eyebrow-line"></span> 01 / 01</p>
           <div class="intro-row">
-            <div>
-              <h1 id="page-title">Tauri <span>技术栈</span></h1>
+            <div class="intro-main">
+              <h1 id="page-title">Ethan Wilkins <span>技术栈</span></h1>
               <p class="intro-copy">从系统能力到界面呈现，梳理桌面应用的核心模块与通信边界。</p>
               <p class="version-note">悬停或聚焦条目查看说明 · 依赖版本每日检查</p>
             </div>
-            <div class="version-pill"><span class="status-dot"></span> Tauri <strong class="versioned tech-tip" tabindex="0" aria-label="Tauri 2.12.3 stable，跨平台桌面应用框架。" data-tip="跨平台桌面应用框架；Rust 负责原生核心，Web 前端负责界面。" data-package="tauri" data-version="2.12.3" data-package-name="Tauri" data-package-url="https://crates.io/crates/tauri">2.12.3</strong> <span>Stable</span></div>
+            <div class="intro-aside">
+              <div class="version-pill"><span class="status-dot"></span> Tauri <strong class="versioned tech-tip" tabindex="0" aria-label="Tauri 2.12.3 stable，跨平台桌面应用框架。" data-tip="跨平台桌面应用框架；Rust 负责原生核心，Web 前端负责界面。" data-package="tauri" data-version="2.12.3" data-package-name="Tauri" data-package-url="https://crates.io/crates/tauri">2.12.3</strong> <span>Stable</span></div>
+              <div class="stack-chips" aria-label="技术栈分支">
+                <span class="stack-chip chip-rust">Rust</span>
+                <span class="stack-chip chip-mcp">MCP</span>
+                <span class="stack-chip chip-vue">Vue</span>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section class="architecture" aria-label="Tauri 技术栈架构">
+        <section class="architecture" aria-label="Ethan Wilkins 技术栈架构">
           <div class="root-node">
             <span class="root-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
             <span class="root-label">DESKTOP APP SHELL</span>
@@ -41,6 +49,7 @@
           </div>
           <div class="trunk" aria-hidden="true"></div>
 
+          <p class="flow-caption">跨层调用路径 · CALL PATH</p>
           <div class="flow-ribbon" aria-label="跨层调用路径">
             <span class="flow-step flow-ui">Vue 界面</span>
             <span class="flow-link" aria-hidden="true">↔</span>
@@ -52,6 +61,8 @@
             <span class="flow-link" aria-hidden="true">↔</span>
             <span class="flow-step flow-mcp">MCP Adapter</span>
           </div>
+          <div class="trunk trunk-lower" aria-hidden="true"></div>
+          <div class="branch-connector" aria-hidden="true"><span></span><span></span><span></span></div>
 
           <div class="branch-grid">
             <section class="branch branch-rust" aria-labelledby="rust-title">
@@ -149,12 +160,15 @@
                   </ul>
                 </section>
                 <section class="module protocol-module">
-                  <h3 class="tech-tip" tabindex="0" aria-label="MCP 协议与传输，使用 JSON-RPC 2.0 消息格式，并由连接协商协议修订版与能力。" data-tip="MCP 使用 JSON-RPC 2.0 表达请求、响应与通知；连接初始化时协商协议修订版及双方能力。">Protocol & Transport</h3>
+                  <h3 class="tech-tip" tabindex="0" aria-label="MCP 协议与传输，当前规范修订版 2026-07-28，使用 JSON-RPC 2.0 消息格式，并由连接协商协议修订版与能力。" data-tip="MCP 使用 JSON-RPC 2.0 表达请求、响应与通知；当前规范修订版为 2026-07-28，连接初始化时协商实际修订版及双方能力。">Protocol & Transport</h3>
                   <div class="protocol-summary">
-                    <span class="protocol-label">MESSAGE PROTOCOL</span>
-                    <strong>JSON-RPC 2.0</strong>
-                    <p>初始化时协商协议修订版与客户端 / 服务端能力</p>
-                    <a href="https://modelcontextprotocol.io/specification" target="_blank" rel="noopener noreferrer">阅读 MCP 协议规范 ↗</a>
+                    <span class="protocol-label">MCP PROTOCOL</span>
+                    <div class="protocol-title-row">
+                      <strong>JSON-RPC 2.0</strong>
+                      <span class="protocol-version tech-tip" tabindex="0" aria-label="MCP 协议修订版 2026-07-28，连接初始化时协商。" data-tip="当前 MCP 规范修订版为 2026-07-28；具体连接在初始化时协商实际使用的修订版与双方能力。">2026-07-28</span>
+                    </div>
+                    <p>当前规范修订版；初始化时协商实际修订版与客户端 / 服务端能力</p>
+                    <a href="https://modelcontextprotocol.io/specification/2026-07-28" target="_blank" rel="noopener noreferrer">阅读 MCP 协议规范 ↗</a>
                   </div>
                   <h4 class="transport-label">传输方式</h4>
                   <ul class="tag-list">
@@ -214,8 +228,8 @@
       </main>
 
       <footer class="site-footer">
-        <span>TAURI DESKTOP STACK</span>
-        <span>Rust <b>×</b> MCP <b>×</b> Vue</span>
+        <span>ETHAN WILKINS · DESKTOP STACK</span>
+        <span class="footer-links">Rust <b>×</b> MCP <b>×</b> Vue</span>
       </footer>
     </div>
   </body>
