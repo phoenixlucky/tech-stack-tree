@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f5f7f2">
-    <meta name="description" content="Ethan Wilkins 技术栈：Tauri 桌面应用架构，Rust 核心、TypeScript MCP Adapter 与 Vue 前端。">
+    <meta name="description" content="Ethan Wilkins 技术栈：Tauri 桌面应用架构，覆盖 Rust 核心、TypeScript MCP Adapter、Vue 界面、横切工程能力与交付链路。">
     <title>Ethan Wilkins 技术栈 · 架构图谱</title>
     <link rel="stylesheet" href="styles.css">
     <script src="tooltips.js" defer></script>
@@ -26,7 +26,7 @@
           <div class="intro-row">
             <div class="intro-main">
               <h1 id="page-title">Ethan Wilkins <span>技术栈</span></h1>
-              <p class="intro-copy">从系统能力到界面呈现，梳理桌面应用的核心模块与通信边界。</p>
+              <p class="intro-copy">从界面交互到系统能力，再到模型调用与交付链路，梳理桌面应用的模块边界、横切约束和端到端路径。</p>
               <p class="version-note">悬停或聚焦条目查看说明 · 依赖版本每日检查</p>
             </div>
             <div class="intro-aside">
@@ -35,6 +35,8 @@
                 <span class="stack-chip chip-rust">Rust</span>
                 <span class="stack-chip chip-mcp">MCP</span>
                 <span class="stack-chip chip-vue">Vue</span>
+                <span class="stack-chip chip-ops">Security</span>
+                <span class="stack-chip chip-ops">Delivery</span>
               </div>
             </div>
           </div>
@@ -49,17 +51,38 @@
           </div>
           <div class="trunk" aria-hidden="true"></div>
 
-          <p class="flow-caption">跨层调用路径 · CALL PATH</p>
-          <div class="flow-ribbon" aria-label="跨层调用路径">
-            <span class="flow-step flow-ui">Vue 界面</span>
-            <span class="flow-link" aria-hidden="true">↔</span>
-            <span class="flow-step">Tauri IPC</span>
-            <span class="flow-link" aria-hidden="true">↔</span>
-            <span class="flow-step flow-core">Rust 核心</span>
-            <span class="flow-link" aria-hidden="true">↔</span>
-            <span class="flow-step">Sidecar IPC</span>
-            <span class="flow-link" aria-hidden="true">↔</span>
-            <span class="flow-step flow-mcp">MCP Adapter</span>
+          <p class="flow-caption">跨层调用路径 · CALL PATHS</p>
+          <div class="flow-paths">
+            <div class="flow-path">
+              <span class="flow-path-label"><b>UI</b> 界面调用</span>
+              <div class="flow-ribbon" aria-label="界面调用路径">
+                <span class="flow-step flow-ui">Vue 界面</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step">Tauri IPC</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step">Command Handler</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step flow-core">Domain / Service</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step flow-core">System APIs</span>
+              </div>
+            </div>
+            <div class="flow-path">
+              <span class="flow-path-label"><b>AI</b> 模型调用</span>
+              <div class="flow-ribbon" aria-label="模型调用路径">
+                <span class="flow-step flow-mcp">MCP Client</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step flow-mcp">stdio / HTTP</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step flow-mcp">MCP Adapter</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step flow-mcp">Tool Registry</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step">IPC Bridge</span>
+                <span class="flow-link" aria-hidden="true">↔</span>
+                <span class="flow-step flow-core">Domain / Service</span>
+              </div>
+            </div>
           </div>
           <div class="trunk trunk-lower" aria-hidden="true"></div>
           <div class="branch-connector" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -90,9 +113,28 @@
                     <li class="tech-tip" tabindex="0" aria-label="OS APIs，操作系统原生接口，版本随目标操作系统决定。" data-tip="窗口、进程、通知等原生操作系统接口；可用能力与版本随目标系统决定。">OS APIs</li>
                   </ul>
                 </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Data & Persistence，本地数据持久化与迁移。" data-tip="数据持久化层：负责本地数据库、文件存储、缓存与 schema 迁移，隔离业务逻辑和具体引擎。">Data &amp; Persistence</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="SQL Engine，本地关系型数据库引擎，具体选型待定。" data-tip="本地关系型存储引擎，按查询模式与数据规模选型；当前不锁定具体产品，因此不标注版本。">SQL Engine</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Migrations，数据库结构版本迁移。" data-tip="以可回放的迁移脚本管理 schema 演进，保证升级和回滚路径可验证。">Migrations</li>
+                    <li class="tech-tip" tabindex="0" aria-label="File Store，文件与附件存储。" data-tip="管理用户文件、缓存和附件的落盘位置、清理策略与权限。">File Store</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Cache，本地缓存与失效策略。" data-tip="缓存热数据与派生结果，并定义失效、容量和一致性策略。">Cache</li>
+                  </ul>
+                  <p class="module-note">引擎与迁移工具按数据模型选型后再跟踪版本</p>
+                </section>
                 <section class="module module-compact">
                   <h3 class="tech-tip" tabindex="0" aria-label="Async / Background Work，异步任务与后台工作。" data-tip="异步任务与后台工作：处理并发 I/O、定时任务和不应阻塞界面的工作。">Async / Background Work</h3>
                   <ul class="tag-list"><li class="tech-tip versioned" tabindex="0" aria-label="Tokio 1.54.1，Rust 异步运行时。" data-tip="Rust 异步运行时，提供任务调度、异步 I/O 和定时器。" data-package="tokio" data-version="1.54.1" data-package-name="Tokio" data-package-url="https://crates.io/crates/tokio">Tokio <span class="version-value">1.54.1</span></li></ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Task & Event Bus，任务队列与事件分发。" data-tip="任务与事件总线：把长任务、定时作业、进度事件和取消信号从界面请求中解耦。">Task &amp; Event Bus</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Job Queue，后台任务队列。" data-tip="把耗时任务放入队列并按并发上限执行，避免阻塞 UI 与 IPC 线程。">Job Queue</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Scheduler，定时与周期任务。" data-tip="管理定时同步、清理和周期检查，并保证应用退出时安全停止。">Scheduler</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Progress Events，任务进度事件。" data-tip="向界面和 MCP 客户端推送进度、阶段和部分结果。">Progress Events</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Cancellation，取消与超时。" data-tip="为长任务提供取消令牌和超时边界，避免孤儿任务持续占用资源。">Cancellation</li>
+                  </ul>
                 </section>
                 <section class="module">
                   <h3 class="tech-tip" tabindex="0" aria-label="Infrastructure，基础设施依赖集合。" data-tip="基础设施依赖：为序列化、诊断和错误处理提供通用能力。">Infrastructure</h3>
@@ -103,9 +145,36 @@
                     <li class="tech-tip versioned" tabindex="0" aria-label="anyhow 1.0.104，应用层错误上下文处理。" data-tip="应用层错误处理工具，便于组合错误并附加上下文信息。" data-package="anyhow" data-version="1.0.104" data-package-name="anyhow" data-package-url="https://crates.io/crates/anyhow">anyhow <span class="version-value">1.0.104</span></li>
                   </ul>
                 </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Observability & Diagnostics，运行时诊断与观测。" data-tip="运行时观测：把结构化日志、指标、崩溃报告和跨进程 trace 上下文串成一条可排查的链路。">Observability &amp; Diagnostics</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Structured Logs，结构化日志。" data-tip="以字段化事件记录关键路径，避免只留下无法检索的自由文本。">Structured Logs</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Metrics，指标采集。" data-tip="采集启动耗时、IPC 延迟、任务队列长度和失败率等关键指标。">Metrics</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Crash Report，崩溃报告。" data-tip="在崩溃时保留调用栈和最近事件，并明确本地留存与上报边界。">Crash Report</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Trace Context，跨进程追踪上下文。" data-tip="把一次请求的 trace 上下文从界面经 IPC 传到 sidecar，便于还原完整调用链。">Trace Context</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Security & Secrets，权限、密钥与完整性校验。" data-tip="安全边界：限制可调用的命令与系统能力，托管敏感凭据，并校验输入和产物完整性。">Security &amp; Secrets</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Capability ACL，Tauri 能力白名单。" data-tip="按窗口与命令声明允许访问的能力，默认拒绝未显式授权的系统接口。">Capability ACL</li>
+                    <li class="tech-tip" tabindex="0" aria-label="OS Keychain，操作系统密钥链。" data-tip="把令牌和密钥交给系统密钥链保管，避免明文写入配置或本地文件。">OS Keychain</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Input Validation，边界输入校验。" data-tip="在 IPC 与 MCP 入口统一校验参数，拒绝越权路径和异常负载。">Input Validation</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Signature Verification，更新包与制品签名校验。" data-tip="校验安装包、更新清单和外部制品的签名，防止被替换或篡改。">Signature Check</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Testing & Contract，测试与跨进程契约。" data-tip="测试与契约：用单元、集成和跨进程契约测试，固定 IPC 与 MCP 的行为边界。">Testing &amp; Contract</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Unit / Integration，单元与集成测试。" data-tip="覆盖领域规则和系统适配层，避免把业务逻辑绑死在真实文件系统上。">Unit / Integration</li>
+                    <li class="tech-tip" tabindex="0" aria-label="IPC Contract Tests，IPC 契约测试。" data-tip="验证命令参数、返回值和错误码在界面与核心之间保持一致。">IPC Contract Tests</li>
+                    <li class="tech-tip" tabindex="0" aria-label="MCP Contract Tests，MCP 契约测试。" data-tip="验证工具 schema、错误语义和协议版本协商没有破坏既有客户端。">MCP Contract Tests</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Fixtures，可复用测试数据。" data-tip="用固定的数据夹具复现边界条件，减少对真实用户数据的依赖。">Fixtures</li>
+                  </ul>
+                </section>
                 <section class="module module-compact">
-                  <h3 class="tech-tip" tabindex="0" aria-label="IPC Bridge，跨进程通信桥。" data-tip="跨进程通信桥：让前端和 MCP sidecar 能调用 Rust 核心服务。">IPC Bridge</h3>
-                  <p>与 TypeScript MCP Adapter 通信</p>
+                  <h3 class="tech-tip" tabindex="0" aria-label="IPC Bridge，跨进程通信桥。" data-tip="跨进程通信桥：注册命令、事件与数据通道，让前端和 MCP sidecar 统一调用 Rust 核心服务。">IPC Bridge</h3>
+                  <p>命令注册、事件推送与 sidecar 通道</p>
                 </section>
               </div>
             </section>
@@ -130,7 +199,7 @@
                   <div class="sdk-grid">
                     <div class="sdk-card">
                       <span class="sdk-kind">SERVER</span>
-                      <h4 class="tech-tip" tabindex="0" aria-label="@modelcontextprotocol/server 2.4.0，构建 MCP 服务端。" data-tip="MCP 服务端 SDK。注册可调用的工具、可读资源和提示模板。">@modelcontextprotocol/server</h4>
+                      <h4 class="tech-tip" tabindex="0" aria-label="@modelcontextprotocol/server 2.4.0，构建 MCP 服务端。" data-tip="MCP 服务端 SDK。注册可调用的工具、可读资源和提示模板。">@modelcontextprotocol/<wbr>server</h4>
                       <span class="versioned sdk-version tech-tip" tabindex="0" aria-label="MCP Server SDK 2.4.0，当前版本。" data-tip="官方 MCP Server SDK 当前稳定版本 2.4.0。" data-package="mcp-server" data-version="2.4.0" data-package-name="MCP Server SDK" data-package-url="https://www.npmjs.com/package/@modelcontextprotocol/server">2.4.0</span>
                       <p class="sdk-name tech-tip" tabindex="0" aria-label="MCP Server，向模型提供工具、资源和提示。" data-tip="MCP Server：对外暴露 Tools、Resources 与 Prompts。">MCP Server</p>
                       <ul class="plain-list">
@@ -141,7 +210,7 @@
                     </div>
                     <div class="sdk-card">
                       <span class="sdk-kind">CLIENT</span>
-                      <h4 class="tech-tip" tabindex="0" aria-label="@modelcontextprotocol/client 2.4.0，连接并调用 MCP 服务端。" data-tip="MCP 客户端 SDK。连接外部 MCP server，发现并调用工具，读取资源。">@modelcontextprotocol/client</h4>
+                      <h4 class="tech-tip" tabindex="0" aria-label="@modelcontextprotocol/client 2.4.0，连接并调用 MCP 服务端。" data-tip="MCP 客户端 SDK。连接外部 MCP server，发现并调用工具，读取资源。">@modelcontextprotocol/<wbr>client</h4>
                       <span class="versioned sdk-version tech-tip" tabindex="0" aria-label="MCP Client SDK 2.4.0，当前版本。" data-tip="官方 MCP Client SDK 当前稳定版本 2.4.0。" data-package="mcp-client" data-version="2.4.0" data-package-name="MCP Client SDK" data-package-url="https://www.npmjs.com/package/@modelcontextprotocol/client">2.4.0</span>
                       <p class="sdk-name tech-tip" tabindex="0" aria-label="MCP Client，连接 MCP 服务。" data-tip="MCP Client：连接一个或多个 MCP 服务并交换协议消息。">MCP Client</p>
                       <ul class="plain-list">
@@ -176,10 +245,46 @@
                     <li class="tech-tip" tabindex="0" aria-label="Streamable HTTP，通过 HTTP 请求和流式响应连接远程 MCP 服务。" data-tip="远程连接：使用 HTTP 请求与可选的流式响应承载 MCP 消息，适合网络服务部署。">Streamable HTTP <span class="transport-hint">网络连接</span></li>
                   </ul>
                   <p class="legacy-note">旧 HTTP + SSE：仅用于兼容迁移；新连接优先使用 Streamable HTTP。</p>
+                  <h4 class="transport-label">连接生命周期</h4>
+                  <ol class="protocol-lifecycle">
+                    <li>initialize</li>
+                    <li>能力协商</li>
+                    <li>tools/list</li>
+                    <li>tools/call</li>
+                    <li>progress / cancel</li>
+                    <li>关闭</li>
+                  </ol>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Tool Registry，工具契约注册与调用记录。" data-tip="工具注册表：把核心能力收敛为稳定的工具契约，集中处理命名、参数、结果和调用记录。">Tool Registry</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Tool Contract，工具名称、描述与输入输出约定。" data-tip="为每个工具定义稳定名称、用途说明和输入输出结构，避免界面表述与模型调用脱节。">Tool Contract</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Argument Schema，工具参数 schema。" data-tip="复用 Zod schema 校验工具参数，并生成模型可见的参数说明。">Argument Schema</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Result Encoding，结果编码与截断。" data-tip="统一文本、结构化数据和二进制结果的编码方式，并控制超长结果的截断策略。">Result Encoding</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Call Audit，调用审计。" data-tip="记录调用来源、参数摘要、耗时与结果状态，便于排查和权限复核。">Call Audit</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Resources & Prompts，MCP 的资源与提示能力。" data-tip="资源与提示：除工具外，MCP 还暴露可读资源与可复用提示；这一层负责模板、订阅和补全。">Resources &amp; Prompts</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Resource Templates，资源模板。" data-tip="用参数化 URI 模板描述可读取的资源集合，避免为每个实例单独注册。">Resource Templates</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Subscriptions，资源变更订阅。" data-tip="在资源变化时通知已订阅的客户端，并定义节流与丢失通知后的重新读取策略。">Subscriptions</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Prompt Templates，提示模板。" data-tip="把常用任务封装为可复用提示，并明确所需参数和适用场景。">Prompt Templates</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Completions，参数补全。" data-tip="为提示和资源参数提供补全候选，降低客户端构造请求的成本。">Completions</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Auth & Policy，身份、作用域与调用配额。" data-tip="授权策略：在本地进程与远程连接上校验身份、作用域和调用配额，并留下审计记录。">Auth &amp; Policy</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Token Validation，令牌校验。" data-tip="校验本地会话令牌或远程访问令牌，拒绝来源不明的调用。">Token Check</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Scopes，工具与资源的作用域。" data-tip="按连接授予最小作用域，只开放完成当前任务所需的工具和资源。">Scopes</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Rate Limits，调用频率限制。" data-tip="限制单连接和单工具的调用频率，防止异常循环消耗本机资源。">Rate Limits</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Audit Log，授权与调用审计日志。" data-tip="记录授权决策和敏感调用，便于追踪异常访问。">Audit Log</li>
+                  </ul>
                 </section>
                 <section class="module module-compact">
-                  <h3 class="tech-tip" tabindex="0" aria-label="IPC Client，调用 Rust 核心业务服务的客户端。" data-tip="IPC Client：封装 adapter 到 Rust 核心业务服务的请求与响应。">IPC Client</h3>
-                  <p>调用 Rust 核心业务服务</p>
+                  <h3 class="tech-tip" tabindex="0" aria-label="IPC Client，调用 Rust 核心业务服务的客户端。" data-tip="IPC Client：封装 adapter 到 Rust 核心业务服务的请求、响应与错误映射。">IPC Client</h3>
+                  <p>调用 Rust 核心业务服务，并映射错误与超时</p>
                 </section>
               </div>
             </section>
@@ -205,6 +310,61 @@
                   </ul>
                 </section>
                 <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Platform Bridge，前端调用桌面能力的桥接层。" data-tip="平台桥接：统一封装 Tauri 命令、事件和原生窗口能力，避免组件直接散落调用。">Platform Bridge</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Tauri JS API，前端调用 Rust 命令。" data-tip="通过 invoke 与事件 API 访问 Rust 命令和系统能力，并统一处理错误与超时。">Tauri JS API</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Event Subscription，后端事件订阅。" data-tip="订阅任务进度、状态变化和系统事件，并在组件卸载时释放监听。">Event Subscription</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Window & Tray，窗口、托盘与菜单。" data-tip="控制窗口生命周期、托盘入口和原生菜单，保持多窗口状态一致。">Window &amp; Tray</li>
+                    <li class="tech-tip" tabindex="0" aria-label="File Dialog，原生文件选择与拖放。" data-tip="调用原生文件对话框和拖放通道，并把路径权限限制在用户选择范围内。">File Dialog</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Data Access，前端数据获取与缓存策略。" data-tip="数据访问：把 IPC 请求、缓存和乐观更新收口到统一的数据层。">Data Access</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="IPC Wrapper，请求封装。" data-tip="统一请求参数、取消和错误映射，让页面只处理业务语义。">IPC Wrapper</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Request Cache，请求缓存。" data-tip="缓存可复用的查询结果，并定义失效、刷新和并发去重策略。">Request Cache</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Optimistic Update，乐观更新。" data-tip="先更新界面再等待后端确认，失败时回滚并提示用户。">Optimistic Update</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Offline & Error State，离线与错误态。" data-tip="区分离线、超时、权限不足和服务错误，给出可恢复的操作建议。">Offline / Error State</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="UI System，界面组件与视觉规范。" data-tip="界面体系：由组件库、设计令牌、图标和复杂数据展示共同构成。">UI System</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Component Library，UI 组件库，具体选型待定。" data-tip="UI 组件库尚未指定具体产品，因此没有统一对应版本；按项目需求选型后再跟踪版本。">Component Library</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Design Tokens，颜色、间距和字体令牌。" data-tip="用令牌统一颜色、间距、圆角和字体，避免页面样式漂移。">Design Tokens</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Icons，图标体系。" data-tip="统一图标尺寸、线宽和语义，保证不同状态下的识别度。">Icons</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Charts & Tables，图表与表格。" data-tip="为长列表和大表格定义虚拟滚动、空态和批量操作模式。">Charts &amp; Tables</li>
+                  </ul>
+                  <p class="optional-note">组件库按需求单独选型</p>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="UX & A11y，交互体验与可访问性。" data-tip="体验与可访问性：覆盖键盘路径、焦点管理、动效偏好和本地化文案。">UX &amp; A11y</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Keyboard Path，键盘可达路径。" data-tip="保证所有可操作项可通过键盘到达，并维持合理的 Tab 顺序。">Keyboard Path</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Focus Management，焦点管理。" data-tip="在弹窗、路由切换和异步更新后恢复焦点，避免用户迷失位置。">Focus Management</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Reduced Motion，减少动态效果。" data-tip="尊重系统减少动态效果偏好，关闭非必要动画和过渡。">Reduced Motion</li>
+                    <li class="tech-tip" tabindex="0" aria-label="i18n，国际化与文案。" data-tip="把界面文案、日期和数字格式集中管理，为多语言扩展留出空间。">i18n</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Feature Modules，按业务能力切分的页面与组件。" data-tip="功能模块：按业务能力组织页面、组件和状态，避免全局样式与逻辑互相渗透。">Feature Modules</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Pages & Routes，页面与路由。" data-tip="以页面为入口组织视图，并让路由成为功能模块之间的显式边界。">Pages &amp; Routes</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Feature Folders，按功能组织代码。" data-tip="把同一功能的组件、状态和请求放在一起，降低跨目录跳转成本。">Feature Folders</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Permission Views，权限视图。" data-tip="根据能力与角色控制可见操作，同时在后端再次校验权限。">Permission Views</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Shortcuts，键盘快捷键。" data-tip="为高频操作提供快捷键，并避免与输入框和系统快捷键冲突。">Shortcuts</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Feedback & States，反馈与状态呈现。" data-tip="反馈与状态：用统一的加载、空态、错误和通知模式，让用户知道系统正在做什么。">Feedback &amp; States</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Loading & Skeleton，加载与骨架屏。" data-tip="区分首次加载、刷新和局部加载，避免整页闪烁。">Loading / Skeleton</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Empty State，空态。" data-tip="空态说明为什么没有内容，并给出下一步可执行操作。">Empty State</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Toast & Dialog，通知与对话框。" data-tip="轻量结果用通知，需要决策的操作用对话框，并保证焦点和关闭路径完整。">Toast / Dialog</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Progress，长任务进度。" data-tip="为可度量任务展示进度，为不可度量任务展示阶段，并提供取消入口。">Progress</li>
+                  </ul>
+                </section>
+                <section class="module">
                   <h3 class="tech-tip" tabindex="0" aria-label="Optional，按项目需求引入。" data-tip="可选依赖：仅在项目需要路由或实用类 CSS 时加入。">Optional</h3>
                   <ul class="stack-list">
                     <li class="tech-tip versioned" tabindex="0" aria-label="Vue Router 5.4.0，Vue 应用路由，需要时使用。" data-tip="Vue 官方路由库，用于页面路由与导航；原清单标记为按需使用。" data-package="vue-router" data-version="5.4.0" data-package-name="Vue Router" data-package-url="https://www.npmjs.com/package/vue-router"><span>Vue Router</span><strong class="version-value">5.4.0</strong></li>
@@ -212,13 +372,93 @@
                   </ul>
                   <p class="optional-note">需要时按项目需求引入</p>
                 </section>
-                <section class="module module-compact">
-                  <h3 class="tech-tip" tabindex="0" aria-label="UI 组件库，按需求单独选型，当前尚未指定具体包。" data-tip="UI 组件库尚未指定具体产品，因此没有统一对应版本；按项目需求选型后再跟踪版本。">UI 组件库</h3>
-                  <p>按需求单独选型</p>
-                </section>
               </div>
             </section>
           </div>
+
+          <section class="crosscut" aria-labelledby="crosscut-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">CROSS-CUTTING · 横切关注点</p>
+                <h2 id="crosscut-title">贯穿三条分支的工程约束</h2>
+              </div>
+              <p class="section-intro">这些能力不单独占据一层，却在每次 IPC、MCP 和界面调用中持续生效。</p>
+            </div>
+            <div class="crosscut-grid">
+              <article class="crosscut-item tech-tip" tabindex="0" aria-label="安全边界：权限、密钥和完整性校验。" data-tip="安全边界：从 Tauri 能力白名单到 MCP 作用域，再到更新包签名，形成端到端的信任链。">
+                <span class="crosscut-tag">SEC</span>
+                <h3>安全边界</h3>
+                <p>能力白名单、密钥托管、输入校验与签名验证。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" aria-label="可观测性：日志、指标与调用追踪。" data-tip="可观测性：用 tracing 事件串联界面请求、IPC 命令和 MCP 工具调用，定位跨进程问题。">
+                <span class="crosscut-tag">OBS</span>
+                <h3>可观测性</h3>
+                <p>结构化日志、耗时指标与跨进程调用链。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" aria-label="配置与特性开关：环境分层与灰度。" data-tip="配置管理：区分开发、测试和生产配置，用特性开关控制灰度，不把环境差异写死在代码里。">
+                <span class="crosscut-tag">CFG</span>
+                <h3>配置与开关</h3>
+                <p>环境分层、运行时配置与灰度特性开关。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" aria-label="错误与恢复：超时、重试和降级。" data-tip="错误与恢复：统一错误类型，明确超时、重试、降级和用户可读的失败提示。">
+                <span class="crosscut-tag">RES</span>
+                <h3>错误与恢复</h3>
+                <p>统一错误类型、超时重试、降级与可读提示。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" aria-label="性能与资源：启动、内存和序列化开销。" data-tip="性能与资源：关注冷启动、内存占用、IPC 序列化开销和后台任务调度。">
+                <span class="crosscut-tag">PERF</span>
+                <h3>性能与资源</h3>
+                <p>启动耗时、内存占用、序列化开销与任务调度。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" aria-label="可访问性与国际化：键盘、焦点和本地化。" data-tip="可访问性与国际化：键盘路径、焦点管理、减少动态效果，以及集中的文案与本地化。">
+                <span class="crosscut-tag">A11Y</span>
+                <h3>可访问性</h3>
+                <p>键盘路径、焦点管理、减少动效与国际化。</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="delivery" aria-labelledby="delivery-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">DELIVERY PIPELINE · 交付链路</p>
+                <h2 id="delivery-title">从本地开发到运行观测</h2>
+              </div>
+              <p class="section-intro">架构不只描述运行时，也描述代码如何被验证、打包、签名和持续观察。</p>
+            </div>
+            <ol class="pipeline-track">
+              <li class="pipeline-stage tech-tip" tabindex="0" aria-label="本地开发：Vite 热更新与 Tauri dev。" data-tip="本地开发：前端使用 Vite 热更新，Rust 侧以 Tauri dev 运行；接口契约先于页面实现固定下来。">
+                <span class="pipeline-index">01</span>
+                <h3>本地开发</h3>
+                <p>Vite 热更新、Tauri dev 与本地 IPC 联调。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" aria-label="质量门禁：类型、格式、静态分析与测试。" data-tip="质量门禁：类型检查、格式化、静态分析和单元 / 集成测试；具体工具链按项目选型。">
+                <span class="pipeline-index">02</span>
+                <h3>质量门禁</h3>
+                <p>类型检查、格式、静态分析与测试，工具链按项目选型。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" aria-label="构建产物：Rust release 编译与前端生产构建。" data-tip="构建产物：Rust release 编译、前端生产构建、资源裁剪与产物体积检查。">
+                <span class="pipeline-index">03</span>
+                <h3>构建产物</h3>
+                <p>Rust release 编译、前端生产构建与体积检查。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" aria-label="打包与签名：平台安装包、签名和公证。" data-tip="打包与签名：生成各平台安装包，完成代码签名和必要的公证，保证安装来源可信。">
+                <span class="pipeline-index">04</span>
+                <h3>打包签名</h3>
+                <p>平台安装包、代码签名与公证，按目标平台配置。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" aria-label="更新分发：更新清单、渠道与回滚。" data-tip="更新分发：维护更新清单与发布渠道，更新包同样需要签名校验，并保留可回滚的上一版本。">
+                <span class="pipeline-index">05</span>
+                <h3>更新分发</h3>
+                <p>更新清单、发布渠道、签名校验与回滚策略。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" aria-label="运行观测：崩溃上报、日志与灰度。" data-tip="运行观测：收集崩溃、结构化日志和版本分布，用数据决定灰度扩大还是回滚。">
+                <span class="pipeline-index">06</span>
+                <h3>运行观测</h3>
+                <p>崩溃上报、结构化日志、版本分布与灰度回滚。</p>
+              </li>
+            </ol>
+          </section>
         </section>
         <aside id="version-notice" class="version-notice" role="status" aria-live="polite" aria-atomic="true" hidden>
           <div class="notice-heading"><span class="notice-icon" aria-hidden="true">↗</span><strong id="version-summary">正在检查版本…</strong></div>
@@ -229,7 +469,7 @@
 
       <footer class="site-footer">
         <span>ETHAN WILKINS · DESKTOP STACK</span>
-        <span class="footer-links">Rust <b>×</b> MCP <b>×</b> Vue</span>
+        <span class="footer-links">Rust <b>×</b> MCP <b>×</b> Vue <b>×</b> Delivery</span>
       </footer>
     </div>
   </body>
