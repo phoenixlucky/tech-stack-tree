@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f5f7f2">
-    <meta name="description" content="Ethan Wilkins 技术栈：Tauri 桌面应用架构，覆盖 Rust 核心、TypeScript MCP Adapter、Vue 界面、横切工程能力与交付链路。">
+    <meta name="description" content="Ethan Wilkins 技术栈：Tauri 桌面应用架构，覆盖 Rust 核心、TypeScript MCP Adapter、Vue 界面、Go / Python 侧车工具、横切工程能力与交付链路。">
     <title>Ethan Wilkins 技术栈 · 架构图谱</title>
     <link rel="stylesheet" href="styles.css">
     <script src="tooltips.js" defer></script>
@@ -26,7 +26,7 @@
           <div class="intro-row">
             <div class="intro-main">
               <h1 id="page-title">Ethan Wilkins <span>技术栈</span></h1>
-              <p class="intro-copy">从界面交互到系统能力，再到模型调用与交付链路，梳理桌面应用的模块边界、横切约束和端到端路径。</p>
+              <p class="intro-copy">从界面交互到系统能力，再到模型调用、数据工具与交付链路，梳理桌面应用的模块边界、横切约束和端到端路径。</p>
               <p class="version-note">悬停或聚焦条目查看说明 · 依赖版本每日检查</p>
             </div>
             <div class="intro-aside">
@@ -35,6 +35,8 @@
                 <span class="stack-chip chip-rust">Rust</span>
                 <span class="stack-chip chip-mcp">MCP</span>
                 <span class="stack-chip chip-vue">Vue</span>
+                <span class="stack-chip chip-go">Go</span>
+                <span class="stack-chip chip-python">Python</span>
                 <span class="stack-chip chip-ops">Security</span>
                 <span class="stack-chip chip-ops">Delivery</span>
               </div>
@@ -304,8 +306,8 @@
                 <section class="module">
                   <h3 class="tech-tip" tabindex="0" aria-label="Core Tooling，前端核心语言、构建工具和状态管理。" data-tip="核心工具：提供前端类型系统、开发/构建流程和应用状态管理。">Core Tooling</h3>
                   <ul class="stack-list">
-                    <li class="tech-tip versioned" tabindex="0" aria-label="TypeScript 6.0.3，JavaScript 的静态类型扩展。" data-tip="JavaScript 的静态类型扩展，在构建阶段检查类型并提供编辑器支持。" data-package="typescript" data-version="6.0.3" data-package-name="TypeScript" data-package-url="https://www.npmjs.com/package/typescript"><span>TypeScript</span><strong class="version-value">6.0.3</strong></li>
-                    <li class="tech-tip versioned" tabindex="0" aria-label="Vite 8.3.6，前端开发服务器和构建工具。" data-tip="前端开发服务器与打包工具，提供本地热更新和生产构建。" data-package="vite" data-version="8.3.6" data-package-name="Vite" data-package-url="https://www.npmjs.com/package/vite"><span>Vite</span><strong class="version-value">8.3.6</strong></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="TypeScript 7.0.2，JavaScript 的静态类型扩展。" data-tip="JavaScript 的静态类型扩展，在构建阶段检查类型并提供编辑器支持。" data-package="typescript" data-version="7.0.2" data-package-name="TypeScript" data-package-url="https://www.npmjs.com/package/typescript"><span>TypeScript</span><strong class="version-value">7.0.2</strong></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Vite 8.3.8，前端开发服务器和构建工具。" data-tip="前端开发服务器与打包工具，提供本地热更新和生产构建。" data-package="vite" data-version="8.3.8" data-package-name="Vite" data-package-url="https://www.npmjs.com/package/vite"><span>Vite</span><strong class="version-value">8.3.8</strong></li>
                     <li class="tech-tip versioned" tabindex="0" aria-label="Pinia 4.1.0，Vue 状态管理库。" data-tip="Vue 应用的状态管理库，用于定义和共享应用状态。" data-package="pinia" data-version="4.1.0" data-package-name="Pinia" data-package-url="https://www.npmjs.com/package/pinia"><span>Pinia</span><strong class="version-value">4.1.0</strong></li>
                   </ul>
                 </section>
@@ -367,10 +369,147 @@
                 <section class="module">
                   <h3 class="tech-tip" tabindex="0" aria-label="Optional，按项目需求引入。" data-tip="可选依赖：仅在项目需要路由或实用类 CSS 时加入。">Optional</h3>
                   <ul class="stack-list">
-                    <li class="tech-tip versioned" tabindex="0" aria-label="Vue Router 5.4.0，Vue 应用路由，需要时使用。" data-tip="Vue 官方路由库，用于页面路由与导航；原清单标记为按需使用。" data-package="vue-router" data-version="5.4.0" data-package-name="Vue Router" data-package-url="https://www.npmjs.com/package/vue-router"><span>Vue Router</span><strong class="version-value">5.4.0</strong></li>
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Vue Router 5.5.0，Vue 应用路由，需要时使用。" data-tip="Vue 官方路由库，用于页面路由与导航；原清单标记为按需使用。" data-package="vue-router" data-version="5.5.0" data-package-name="Vue Router" data-package-url="https://www.npmjs.com/package/vue-router"><span>Vue Router</span><strong class="version-value">5.5.0</strong></li>
                     <li class="tech-tip versioned" tabindex="0" aria-label="Tailwind CSS 4.3.5，实用类 CSS 框架，需要时使用。" data-tip="实用类优先的 CSS 框架；原清单标记为按需使用。" data-package="tailwindcss" data-version="4.3.5" data-package-name="Tailwind CSS" data-package-url="https://www.npmjs.com/package/tailwindcss"><span>Tailwind CSS</span><strong class="version-value">4.3.5</strong></li>
                   </ul>
                   <p class="optional-note">需要时按项目需求引入</p>
+                </section>
+              </div>
+            </section>
+
+            <section class="branch branch-go" aria-labelledby="go-title">
+              <div class="branch-heading">
+                <span class="branch-index">04</span>
+                <div>
+                  <p class="branch-kicker">LOCAL SIDECAR</p>
+                  <h2 id="go-title" class="tech-tip" tabindex="0" aria-label="Go 1.27.4 stable，本地 sidecar 与命令行工具语言。" data-tip="本地 sidecar 语言：以单文件二进制承载高并发工具服务、CLI 与系统集成任务。">Go <span class="version-inline versioned" data-package="go" data-version="1.27.4" data-package-name="Go" data-package-url="https://go.dev/dl/">1.27.4 stable</span></h2>
+                  <p class="branch-description">编译为单文件二进制，承载本地 sidecar、CLI 工具与并发任务，降低分发与运行环境成本。</p>
+                </div>
+                <span class="branch-glyph glyph-go" aria-hidden="true">GO</span>
+              </div>
+
+              <div class="module-list">
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Sidecar Service，由 Tauri 启动的本地工具服务。" data-tip="本地 sidecar 服务：由 Tauri 作为子进程启动，通过 stdio 或本机端口提供工具接口。">Sidecar Service</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="JSON-RPC，本地请求与响应协议。" data-tip="以 JSON-RPC 表达请求、响应与通知，与 MCP 和 Rust 核心共用同一套消息语义。">JSON-RPC</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Local HTTP，仅监听本机的 HTTP 接口。" data-tip="只监听回环地址，避免把本地工具能力暴露到局域网。">Local HTTP</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Health Check，进程健康检查。" data-tip="提供就绪与存活检查，让宿主在启动和重启时判断 sidecar 是否可用。">Health Check</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Graceful Shutdown，优雅关闭。" data-tip="收到退出信号后停止接收新请求，等待在途任务完成并释放端口与临时文件。">Graceful Shutdown</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Concurrency & Scheduling，并发模型与任务调度。" data-tip="并发模型：用 goroutine、channel 与 context 组织并发 I/O、任务取消和超时。">Concurrency &amp; Scheduling</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Goroutine，轻量并发执行单元。" data-tip="以轻量 goroutine 承载并发请求和后台任务，避免为每个任务创建系统线程。">Goroutine</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Channel，并发任务间的通信。" data-tip="通过 channel 传递任务与结果，减少共享内存带来的竞态。">Channel</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Context，取消、超时与请求作用域。" data-tip="用 context 传递取消信号和截止时间，确保退出时没有孤儿任务。">Context</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Worker Pool，有界并发工作池。" data-tip="限制同时运行的任务数量，防止本机 CPU、内存或句柄被瞬时打满。">Worker Pool</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Standard Library，标准库中的网络、编码与进程能力。" data-tip="标准库优先：网络服务、JSON 编解码、子进程和结构化日志都使用经过长期验证的标准库。">Standard Library</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="net/http，HTTP 服务与客户端。" data-tip="用标准库提供本地 HTTP 接口和上游请求，并统一配置超时与连接复用。">net/http</li>
+                    <li class="tech-tip" tabindex="0" aria-label="encoding/json，JSON 编解码。" data-tip="在进程边界编解码 JSON，并明确未知字段和数值精度的处理方式。">encoding/json</li>
+                    <li class="tech-tip" tabindex="0" aria-label="os/exec，启动与管理子进程。" data-tip="管理外部命令和 Python 脚本进程，限制参数注入并回收退出状态。">os/exec</li>
+                    <li class="tech-tip" tabindex="0" aria-label="log/slog，结构化日志。" data-tip="输出带字段的结构化日志，便于与 Rust 侧 trace 上下文对齐。">log/slog</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="CLI & Tooling，命令行工具与配置加载。" data-tip="命令行工具：用子命令、参数解析和配置加载，把运维与调试入口收敛为一套 CLI。">CLI &amp; Tooling</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Cobra 1.10.2，Go 命令行应用框架。" data-tip="Go 命令行框架，用于组织子命令、参数解析和帮助输出。" data-package="cobra" data-version="1.10.2" data-package-name="Cobra" data-package-url="https://github.com/spf13/cobra">cobra <span class="version-value">1.10.2</span></li>
+                    <li class="tech-tip" tabindex="0" aria-label="Subcommands，子命令组织。" data-tip="按操作域拆分子命令，让本地调试和自动化脚本复用同一入口。">Subcommands</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Flag Parsing，参数与环境变量解析。" data-tip="同时支持命令行参数和环境变量，并在启动时校验必填配置。">Flag Parsing</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Config Loading，配置文件加载。" data-tip="集中加载并校验 sidecar 配置，避免默认值散落在各模块。">Config Loading</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Build & Release，交叉编译与二进制分发。" data-tip="构建与分发：交叉编译各平台单文件二进制，关闭 CGO 并注入版本信息。">Build &amp; Release</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Cross Compile，跨平台编译。" data-tip="在同一构建机上产出 Windows、macOS 和 Linux 的 sidecar 二进制。">Cross Compile</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Static Binary，静态链接单文件。" data-tip="生成不依赖系统运行时的单文件产物，简化安装与升级路径。">Static Binary</li>
+                    <li class="tech-tip" tabindex="0" aria-label="CGO Disabled，关闭 CGO。" data-tip="关闭 CGO 以保证可复现构建，并避免目标机器缺少 C 运行库。">CGO Disabled</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Version Stamp，构建版本注入。" data-tip="在构建时注入版本、提交号与构建时间，便于运行观测和问题回溯。">Version Stamp</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Observability & Testing，运行时观测与测试。" data-tip="观测与测试：用 pprof、指标和 go test 固定 sidecar 的性能与行为边界。">Observability &amp; Testing</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="pprof，CPU 与内存剖析。" data-tip="在本地诊断 CPU、内存和 goroutine 泄漏，剖析接口默认不对局域网开放。">pprof</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Metrics，请求量与延迟指标。" data-tip="采集请求数、错误率和处理延迟，并随宿主上报到统一观测链路。">Metrics</li>
+                    <li class="tech-tip" tabindex="0" aria-label="go test，单元与集成测试。" data-tip="以表驱动测试覆盖协议解析、并发边界和错误路径。">go test</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Fuzz Test，模糊测试。" data-tip="对参数解析和消息解码做模糊测试，提前发现越界与崩溃输入。">Fuzz Test</li>
+                  </ul>
+                </section>
+              </div>
+            </section>
+
+            <section class="branch branch-python" aria-labelledby="python-title">
+              <div class="branch-heading">
+                <span class="branch-index">05</span>
+                <div>
+                  <p class="branch-kicker">AI &amp; DATA TOOLING</p>
+                  <h2 id="python-title" class="tech-tip" tabindex="0" aria-label="Python 3.15.2 stable，模型评测与数据处理语言。" data-tip="数据与模型工具语言：承载评测脚本、数据处理和自动化任务，通过 MCP 与本地 IPC 交换结果。">Python <span class="version-inline versioned" data-package="python" data-version="3.15.2" data-package-name="Python" data-package-url="https://www.python.org/downloads/">3.15.2 stable</span></h2>
+                  <p class="branch-description">承载模型评测、数据处理与自动化脚本，通过 MCP 和本地 IPC 与核心服务交换结果。</p>
+                </div>
+                <span class="branch-glyph glyph-python" aria-hidden="true">PY</span>
+              </div>
+
+              <div class="module-list">
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="AI & Data Pipeline，评测与数据处理流程。" data-tip="模型与数据流水线：负责数据准备、批量评测、向量任务和结果导出。">AI &amp; Data Pipeline</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="Dataset Prep，评测数据准备。" data-tip="清洗、切分并标注评测数据，保留可复现的数据版本。">Dataset Prep</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Batch Eval，批量模型评测。" data-tip="按固定指标批量评测模型输出，并把提示、参数和结果一起归档。">Batch Eval</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Embedding Jobs，向量化任务。" data-tip="批量生成向量并写入本地索引，控制分片、重试和失败补偿。">Embedding Jobs</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Result Export，结果导出。" data-tip="把评测结果导出为 JSON、CSV 或报告，交给界面和对照流程使用。">Result Export</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="MCP Python SDK，用 Python 实现 MCP 服务端与客户端。" data-tip="官方 MCP Python SDK：用 Python 暴露工具与资源，或连接外部 MCP 服务。">MCP Python SDK</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip versioned" tabindex="0" aria-label="MCP Python SDK 2.3.0，Python MCP 服务端与客户端。" data-tip="官方 Python MCP SDK 当前稳定版本 2.3.0，支持工具、资源与提示。" data-package="mcp-python" data-version="2.3.0" data-package-name="MCP Python SDK" data-package-url="https://pypi.org/project/mcp/">mcp <span class="version-value">2.3.0</span></li>
+                    <li class="tech-tip" tabindex="0" aria-label="Tools & Resources，MCP 工具与资源。" data-tip="把评测与数据能力注册为工具和资源，让模型通过统一协议调用。">Tools &amp; Resources</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Async Client，异步 MCP 客户端。" data-tip="以异步方式连接多个 MCP 服务，并统一超时、重试与取消。">Async Client</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Data Models，运行时校验与数据模型。" data-tip="数据模型：用 Pydantic 定义输入输出结构，在脚本与服务边界统一校验。">Data Models</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Pydantic 2.14.3，Python 数据校验与序列化。" data-tip="基于类型注解的数据校验与序列化库，用于定义评测样本和接口结构。" data-package="pydantic" data-version="2.14.3" data-package-name="Pydantic" data-package-url="https://pypi.org/project/pydantic/">pydantic <span class="version-value">2.14.3</span></li>
+                    <li class="tech-tip" tabindex="0" aria-label="Schema Validation，数据结构校验。" data-tip="在读取样本和写回结果时校验字段、类型与必填项。">Schema Validation</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Settings，环境与配置模型。" data-tip="把环境变量和配置文件收敛到带类型的设置对象，启动时完成校验。">Settings</li>
+                    <li class="tech-tip" tabindex="0" aria-label="JSON Serialization，JSON 序列化。" data-tip="统一日期、枚举和数值的序列化方式，避免跨语言边界出现格式差异。">JSON Serialization</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Packaging & Environment，依赖与运行环境管理。" data-tip="环境管理：用 pyproject、锁文件和 uv 固定依赖，保证脚本可复现。">Packaging &amp; Environment</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip versioned" tabindex="0" aria-label="uv 0.13.7，Python 包与环境管理工具。" data-tip="快速的 Python 包解析与环境管理工具，用于创建虚拟环境和安装锁定依赖。" data-package="uv" data-version="0.13.7" data-package-name="uv" data-package-url="https://pypi.org/project/uv/">uv <span class="version-value">0.13.7</span></li>
+                    <li class="tech-tip" tabindex="0" aria-label="pyproject.toml，项目元数据与依赖声明。" data-tip="在 pyproject.toml 中声明依赖、脚本入口和工具配置，避免多份配置漂移。">pyproject.toml</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Lockfile，依赖锁定。" data-tip="锁定完整依赖图，保证本地、CI 和用户机器解析出一致环境。">Lockfile</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Virtualenv，隔离的虚拟环境。" data-tip="为每个工具创建隔离环境，避免污染系统 Python 和宿主依赖。">Virtualenv</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Quality，Python 代码质量与测试。" data-tip="质量工具：用 Ruff 做格式化与静态检查，用 pytest 固定脚本行为。">Quality</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip versioned" tabindex="0" aria-label="Ruff 0.17.4，Python 格式化与静态检查。" data-tip="用 Rust 实现的 Python 格式化与静态检查工具，统一风格并提前发现常见缺陷。" data-package="ruff" data-version="0.17.4" data-package-name="Ruff" data-package-url="https://pypi.org/project/ruff/">ruff <span class="version-value">0.17.4</span></li>
+                    <li class="tech-tip" tabindex="0" aria-label="pytest，Python 测试框架。" data-tip="以夹具和参数化测试覆盖数据清洗、评测指标和错误路径。">pytest</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Type Hints，类型注解。" data-tip="在公共函数和数据结构上标注类型，让静态检查和编辑器获得足够信息。">Type Hints</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Coverage，测试覆盖率。" data-tip="跟踪关键模块的覆盖情况，优先补齐数据边界和失败分支。">Coverage</li>
+                  </ul>
+                </section>
+                <section class="module">
+                  <h3 class="tech-tip" tabindex="0" aria-label="Scripts & Automation，脚本入口与自动化任务。" data-tip="脚本与自动化：把一次性实验收敛为可复用命令，并接入定时任务和日志。">Scripts &amp; Automation</h3>
+                  <ul class="tag-list">
+                    <li class="tech-tip" tabindex="0" aria-label="CLI Entrypoints，命令行入口。" data-tip="用统一入口暴露数据准备、评测和导出命令，减少散落的一次性脚本。">CLI Entrypoints</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Scheduled Jobs，定时任务。" data-tip="按周期运行清理、评测和索引更新，并与 Rust 侧调度器协调退出。">Scheduled Jobs</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Report Export，报告输出。" data-tip="生成可归档的评测报告与指标摘要，供界面展示和版本对比。">Report Export</li>
+                    <li class="tech-tip" tabindex="0" aria-label="Structured Logging，结构化日志。" data-tip="输出带任务 ID 和阶段的结构化日志，便于与 sidecar 和核心服务串联。">Structured Logging</li>
+                  </ul>
                 </section>
               </div>
             </section>
@@ -380,7 +519,7 @@
             <div class="section-head">
               <div>
                 <p class="section-kicker">CROSS-CUTTING · 横切关注点</p>
-                <h2 id="crosscut-title">贯穿三条分支的工程约束</h2>
+                <h2 id="crosscut-title">贯穿五条分支的工程约束</h2>
               </div>
               <p class="section-intro">这些能力不单独占据一层，却在每次 IPC、MCP 和界面调用中持续生效。</p>
             </div>
@@ -469,7 +608,7 @@
 
       <footer class="site-footer">
         <span>ETHAN WILKINS · DESKTOP STACK</span>
-        <span class="footer-links">Rust <b>×</b> MCP <b>×</b> Vue <b>×</b> Delivery</span>
+        <span class="footer-links">Rust <b>×</b> MCP <b>×</b> Vue <b>×</b> Go <b>×</b> Python <b>×</b> Delivery</span>
       </footer>
     </div>
   </body>

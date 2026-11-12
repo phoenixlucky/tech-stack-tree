@@ -15,6 +15,13 @@ const packageSources = {
   pinia: { type: "npm", name: "pinia" },
   "vue-router": { type: "npm", name: "vue-router" },
   tailwindcss: { type: "npm", name: "tailwindcss" },
+  go: { type: "go" },
+  python: { type: "python" },
+  cobra: { type: "go-module", name: "github.com/spf13/cobra" },
+  "mcp-python": { type: "pypi", name: "mcp" },
+  pydantic: { type: "pypi", name: "pydantic" },
+  uv: { type: "pypi", name: "uv" },
+  ruff: { type: "pypi", name: "ruff" },
 };
 
 async function readJson(url, headers = {}) {
@@ -39,6 +46,30 @@ async function readStableRust() {
 }
 
 async function readPackageVersion(source) {
+  if (source.type === "go") {
+    const data = await readJson("https://go.dev/dl/?mode=json");
+    const version = data.find((entry) => entry.stable)?.version?.replace(/^go/, "");
+    if (!version) throw new Error("No stable Go release found");
+    return version;
+  }
+  if (source.type === "python") {
+    const data = await readJson("https://endoflife.date/api/python.json");
+    const version = data.find((entry) => entry.latest)?.latest;
+    if (!version) throw new Error("No stable Python release found");
+    return version;
+  }
+  if (source.type === "pypi") {
+    const data = await readJson(`https://pypi.org/pypi/${source.name}/json`);
+    const version = data.info?.version;
+    if (!version) throw new Error(`No stable version found for PyPI package ${source.name}`);
+    return version;
+  }
+  if (source.type === "go-module") {
+    const data = await readJson(`https://proxy.golang.org/${source.name}/@latest`);
+    const version = data.Version?.replace(/^v/, "");
+    if (!version) throw new Error(`No latest version found for Go module ${source.name}`);
+    return version;
+  }
   if (source.type === "crate") {
     const data = await readJson(`https://crates.io/api/v1/crates/${source.name}`, {
       "user-agent": "tech-stack-tree-version-check/1.0 (https://github.com/phoenixlucky/tech-stack-tree)",
@@ -81,6 +112,13 @@ const releaseSources = {
   pinia: { repo: "vuejs/pinia", changelog: "https://raw.githubusercontent.com/vuejs/pinia/v4/packages/pinia/CHANGELOG.md", compare: "https://github.com/vuejs/pinia/compare" },
   "vue-router": { repo: "vuejs/router", changelog: "https://raw.githubusercontent.com/vuejs/router/main/packages/router/CHANGELOG.md", compare: "https://github.com/vuejs/router/compare" },
   tailwindcss: { repo: "tailwindlabs/tailwindcss", changelog: "https://raw.githubusercontent.com/tailwindlabs/tailwindcss/main/CHANGELOG.md", compare: "https://github.com/tailwindlabs/tailwindcss/compare" },
+  go: { repo: "golang/go", tag: (version) => `go${version}`, compareTag: (version) => `go${version}`, compare: "https://github.com/golang/go/compare" },
+  python: { repo: "python/cpython", tag: (version) => `v${version}`, compareTag: (version) => `v${version}`, compare: "https://github.com/python/cpython/compare" },
+  cobra: { repo: "spf13/cobra", tag: (version) => `v${version}`, compareTag: (version) => `v${version}` },
+  "mcp-python": { repo: "modelcontextprotocol/python-sdk", tag: (version) => `v${version}`, compareTag: (version) => `v${version}` },
+  pydantic: { repo: "pydantic/pydantic", tag: (version) => `v${version}`, compareTag: (version) => `v${version}` },
+  uv: { repo: "astral-sh/uv", tag: (version) => version, compareTag: (version) => version },
+  ruff: { repo: "astral-sh/ruff", tag: (version) => version, compareTag: (version) => version },
 };
 
 function compareVersions(left, right) {
@@ -113,6 +151,8 @@ async function releaseNote(key, version, compareFrom, compareTo) {
   if (!source) return { summary: "该项目未提供可自动读取的独立发布说明。", url: `https://github.com/search?q=${encodeURIComponent(`${key} ${version} changelog`)}&type=repositories`, available: false };
   if (key === "typescript" && version === "6.0.3") return { summary: "6.0.3 是 6.0 系列补丁版：以维护修复为主，保留 JavaScript/TypeScript 编译器与语言服务的原有架构。", url: "https://github.com/microsoft/TypeScript/releases/tag/v6.0.3", available: true };
   if (key === "typescript" && version === "7.0.2") return { summary: "7.0 将编译器与工具移植到原生 Go，官方大型项目构建测试约快 8–12 倍，并改进多线程与 watch。它尚未提供稳定编程 API；Vue 等依赖嵌入式 TS 服务的工作流仍需 6.0。", url: "https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/", available: true };
+  if (key === "go") return { summary: `Go ${version} 为稳定补丁版本，包含安全修复与回归修复；完整改动见官方发布说明。`, url: `https://go.dev/doc/devel/release#go${version}`, available: true };
+  if (key === "python") return { summary: `Python ${version} 为 3.15 系列稳定补丁版本，以错误修复和安全性更新为主；完整改动见官方发布页。`, url: `https://www.python.org/downloads/release/python-${version.replace(/\./g, "")}/`, available: true };
   if (source.changelog) {
     try {
       const response = await fetch(source.changelog, { signal: AbortSignal.timeout(20000) });
