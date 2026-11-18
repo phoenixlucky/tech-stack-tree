@@ -1,0 +1,1323 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f2">
+    <meta name="description" content="Agent 架构图谱：从 CLI、TUI、桌面端与 API 入口，到会话循环、上下文装配、模型调用，以及 MCP、Skill、插件、Agent、命令、工具与权限策略的完整扩展架构。">
+    <title>Agent 架构图谱 · 扩展面与运行时</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="agent.css">
+    <script src="tooltips.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Ethan Wilkins 技术栈首页">
+          <span class="brand-mark" aria-hidden="true">E</span>
+          <span>ETHAN WILKINS</span>
+        </a>
+        <nav class="header-nav" aria-label="页面导航">
+          <a class="header-link" href="index.html">技术栈总览</a>
+          <a class="header-link is-current" href="agent.html" aria-current="page">Agent 架构</a>
+        </nav>
+        <span class="header-note"><span class="header-pulse" aria-hidden="true"></span>运行时 · 扩展面 · 治理</span>
+      </header>
+
+      <main id="top">
+        <section class="intro" aria-labelledby="page-title">
+          <p class="eyebrow"><span class="eyebrow-dot"></span> AGENT BLUEPRINT <span class="eyebrow-line"></span> 02 / 02</p>
+          <div class="intro-row">
+            <div class="intro-main">
+              <h1 id="page-title">Agent <span>架构图谱</span></h1>
+              <p class="intro-copy">从终端、桌面端和 API 入口，到一个回合的上下文装配与模型调用，再到 MCP、Skill、插件、Agent、命令、工具与策略——把 Agent 的运行时、扩展面和硬边界放在同一张图上。</p>
+              <p class="version-note">以 OpenCode V2 为参照实现 · 悬停或聚焦条目查看说明</p>
+            </div>
+            <div class="intro-aside">
+              <div class="version-pill"><span class="status-dot"></span> Agent Runtime <strong>Client ↔ Server</strong> <span>V2</span></div>
+              <div class="stack-chips" aria-label="Agent 架构能力标签">
+                <span class="stack-chip chip-cli">CLI / TUI</span>
+                <span class="stack-chip chip-vue">Desktop / Web</span>
+                <span class="stack-chip chip-api">API / SDK</span>
+                <span class="stack-chip chip-mcp">MCP</span>
+                <span class="stack-chip chip-vue">Skill</span>
+                <span class="stack-chip chip-agent">Plugin</span>
+                <span class="stack-chip chip-python">Agent</span>
+                <span class="stack-chip chip-go">Policy</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="architecture" aria-label="Agent 架构总览">
+          <div class="root-node">
+            <span class="root-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="root-label">AGENT RUNTIME</span>
+            <strong>Session Loop</strong>
+            <span class="root-version">client ↔ server</span>
+          </div>
+          <div class="trunk" aria-hidden="true"></div>
+
+          <p class="flow-caption">核心回路 · CORE LOOPS</p>
+          <div class="flow-paths">
+            <div class="flow-path">
+              <span class="flow-path-label"><b>TURN</b> 会话回合</span>
+              <div class="flow-ribbon" aria-label="一次会话回合">
+                <span class="flow-step flow-ui">用户输入</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">Prompt Hook</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">上下文装配</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">模型调用</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-mcp">Tool Call</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">权限判定</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">结果回填</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">下一步</span>
+              </div>
+            </div>
+            <div class="flow-path">
+              <span class="flow-path-label"><b>LOAD</b> 扩展装配</span>
+              <div class="flow-ribbon" aria-label="扩展装配路径">
+                <span class="flow-step flow-ui">配置合并</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">目录发现</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">注册表</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-mcp">模型可见清单</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">按需加载</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">独立会话</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="trunk trunk-lower" aria-hidden="true"></div>
+
+          <section class="section-block" aria-labelledby="layers-title" style="margin-top: 0; padding-top: 0; border-top: 0;">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">RUNTIME LAYERS · 运行分层</p>
+                <h2 id="layers-title">六层运行栈</h2>
+              </div>
+              <p class="section-intro">上层改变交互方式，下层改变能力边界。扩展不是旁挂脚本，而是进入同一套会话、权限与上下文预算。</p>
+            </div>
+
+            <div class="layer-stack">
+              <div class="layer-row tech-tip" tabindex="0" data-tip="接入层：TUI、Mini、桌面端、Web、HTTP API、ACP 与 SDK 共享同一个后台服务，会话和配置由服务端持有。">
+                <span class="layer-index">L1</span>
+                <div class="layer-info">
+                  <span class="layer-kicker">CLIENT SURFACE</span>
+                  <h2>接入层</h2>
+                  <p>把用户意图送进来，把流式状态送出去。</p>
+                </div>
+                <ul class="layer-items">
+                  <li><b>TUI</b> 全屏终端</li>
+                  <li><b>Mini</b> 轻量交互</li>
+                  <li><b>Desktop</b> 桌面窗口</li>
+                  <li><b>Web</b> 配对访问</li>
+                  <li><b>HTTP API</b> OpenAPI</li>
+                  <li><b>ACP</b> 编辑器接入</li>
+                  <li><b>SDK</b> 进程内嵌入</li>
+                </ul>
+              </div>
+
+              <div class="layer-row tech-tip" tabindex="0" data-tip="会话层：会话是持久化容器；上下文是每个模型步骤重新装配的视图。压缩、快照、指令和引用都在这一层生效。">
+                <span class="layer-index">L2</span>
+                <div class="layer-info">
+                  <span class="layer-kicker">SESSION &amp; CONTEXT</span>
+                  <h2>会话层</h2>
+                  <p>会话持久化，上下文按步重建。</p>
+                </div>
+                <ul class="layer-items">
+                  <li><b>Session</b> 消息与状态</li>
+                  <li><b>Inbox</b> steer / queue</li>
+                  <li><b>Compaction</b> 摘要 / 原生</li>
+                  <li><b>Snapshots</b> 撤销与回滚</li>
+                  <li><b>Instructions</b> 规则注入</li>
+                  <li><b>References</b> 外部目录</li>
+                  <li><b>Attachments</b> 图片与文件</li>
+                </ul>
+              </div>
+
+              <div class="layer-row tech-tip" tabindex="0" data-tip="推理层：负责 provider / model / variant 解析、请求覆写、流式响应、重试退避与缓存预热。">
+                <span class="layer-index">L3</span>
+                <div class="layer-info">
+                  <span class="layer-kicker">MODEL RUNTIME</span>
+                  <h2>推理层</h2>
+                  <p>选择模型，组装请求，管理失败与成本。</p>
+                </div>
+                <ul class="layer-items">
+                  <li><b>Provider</b> 端点与凭据</li>
+                  <li><b>Model</b> 能力与限额</li>
+                  <li><b>Variant</b> 推理档位</li>
+                  <li><b>Streaming</b> 增量输出</li>
+                  <li><b>Retry</b> 退避重试</li>
+                  <li><b>Warming</b> 缓存预热</li>
+                  <li><b>Usage</b> token / cost</li>
+                </ul>
+              </div>
+
+              <div class="layer-row tech-tip" tabindex="0" data-tip="能力层：模型可以调用的动作和可以按需加载的知识。内置工具、Code Mode、MCP、Skill、Agent 与命令在这里汇合。">
+                <span class="layer-index">L4</span>
+                <div class="layer-info">
+                  <span class="layer-kicker">CAPABILITY</span>
+                  <h2>能力层</h2>
+                  <p>动作、知识与角色，最终收敛为工具清单。</p>
+                </div>
+                <ul class="layer-items">
+                  <li><b>Tools</b> 文件 / 命令 / 网络</li>
+                  <li><b>Code Mode</b> 脚本编排</li>
+                  <li><b>MCP</b> 外部协议能力</li>
+                  <li><b>Skills</b> 任务知识</li>
+                  <li><b>Agents</b> 角色与委派</li>
+                  <li><b>Commands</b> 提示入口</li>
+                </ul>
+              </div>
+
+              <div class="layer-row tech-tip" tabindex="0" data-tip="扩展与控制层：插件提供代码级扩展，Permissions 决定允许、询问或拒绝，Policies 做不可被项目覆盖的硬拒绝。">
+                <span class="layer-index">L5</span>
+                <div class="layer-info">
+                  <span class="layer-kicker">EXTENSION &amp; CONTROL</span>
+                  <h2>扩展与控制层</h2>
+                  <p>开放扩展点，同时保留不可绕过的边界。</p>
+                </div>
+                <ul class="layer-items">
+                  <li><b>Server Plugin</b> 工具 / 钩子</li>
+                  <li><b>TUI Plugin</b> 终端界面</li>
+                  <li><b>GUI Plugin</b> 桌面界面</li>
+                  <li><b>RPC</b> 类型化跨端调用</li>
+                  <li><b>Permissions</b> allow / ask / deny</li>
+                  <li><b>Policies</b> 硬拒绝</li>
+                  <li><b>Config</b> 分层与热重载</li>
+                </ul>
+              </div>
+
+              <div class="layer-row tech-tip" tabindex="0" data-tip="工程层：把代码库变成可读、可改、可验证的对象，包括 LSP、格式化、版本控制、工作树、文件监听与网络检索。">
+                <span class="layer-index">L6</span>
+                <div class="layer-info">
+                  <span class="layer-kicker">CODE INTELLIGENCE</span>
+                  <h2>工程层</h2>
+                  <p>让模型理解代码，也让改动可验证、可回滚。</p>
+                </div>
+                <ul class="layer-items">
+                  <li><b>LSP</b> 诊断与跳转</li>
+                  <li><b>Formatters</b> 写后格式化</li>
+                  <li><b>VCS</b> diff / 分支</li>
+                  <li><b>Worktrees</b> 并行工作区</li>
+                  <li><b>Watcher</b> 文件变更</li>
+                  <li><b>Search</b> 代码 / 网络</li>
+                  <li><b>Shell Scanner</b> 命令分析</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="extensions-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">EXTENSION SURFACES · 扩展面</p>
+                <h2 id="extensions-title">六种把能力接进 Agent 的方式</h2>
+              </div>
+              <p class="section-intro">按“协议、知识、代码、角色、入口、底座”拆分。每种扩展进入上下文的方式、执行位置和治理手段都不同。</p>
+            </div>
+            <p class="extension-caption">一句话区分：MCP 接外部系统，Skill 教方法，Plugin 改运行时，Agent 换角色，Command 固化入口，Tool / Model 提供底座。</p>
+
+            <div class="branch-grid agent-grid">
+              <section class="branch branch-mcp" aria-labelledby="mcp-title">
+                <div class="branch-heading">
+                  <span class="branch-index">01</span>
+                  <div>
+                    <p class="branch-kicker">PROTOCOL · 外部能力</p>
+                    <h2 id="mcp-title">MCP</h2>
+                    <p class="branch-description">用一个协议接入外部工具、提示、资源与指令，不把每家集成都写进 Agent 核心。</p>
+                  </div>
+                  <span class="branch-glyph glyph-mcp" aria-hidden="true">MCP</span>
+                </div>
+                <div class="module-list">
+                  <section class="module">
+                    <h3>连接与传输</h3>
+                    <ul class="tag-list">
+                      <li class="tech-tip" tabindex="0" data-tip="本地 MCP server 由 Agent 作为子进程启动，通过 stdin/stdout 交换 JSON-RPC。">Local · stdio</li>
+                      <li class="tech-tip" tabindex="0" data-tip="远程 MCP server 使用 Streamable HTTP；URL 必须是绝对地址。">Remote · Streamable HTTP</li>
+                      <li>initialize + 能力协商</li>
+                      <li class="tech-tip" tabindex="0" data-tip="协议修订版可选 legacy（默认）、auto 探测 2026-07-28，或强制 2026-07-28。">legacy / auto / 2026-07-28</li>
+                      <li>startup / catalog / execution 超时</li>
+                      <li class="tech-tip" tabindex="0" data-tip="pool 让多个目录共享同一个 MCP 连接与工具清单，要求连接参数与协议版本一致。">pool 连接复用</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>暴露的能力</h3>
+                    <ul class="tag-list">
+                      <li class="tech-tip" tabindex="0" data-tip="MCP tools 以 <server>_<tool> 命名，默认在 Code Mode 中按 server 命名空间分组。">Tools</li>
+                      <li class="tech-tip" tabindex="0" data-tip="MCP prompts 注册为 /<server>:<prompt> 命令，参数按顺序填充。">Prompts → 命令</li>
+                      <li>Resources + templates</li>
+                      <li class="tech-tip" tabindex="0" data-tip="服务器初始化时返回的 instructions 会进入系统提示；若某 server 的工具全被拒绝则省略。">Server Instructions</li>
+                      <li class="tech-tip" tabindex="0" data-tip="调用中服务器可通过 elicitation 向用户发起表单或链接输入请求。">Elicitation</li>
+                      <li>按需读取资源</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>身份与边界</h3>
+                    <ul class="tag-list">
+                      <li>OAuth + PKCE</li>
+                      <li class="tech-tip" tabindex="0" data-tip="客户端注册依次尝试预注册 client_id、CIMD 与动态客户端注册（DCR）。">CIMD / DCR / 预注册</li>
+                      <li>逐 server 授权</li>
+                      <li>codemode true / false</li>
+                      <li>逐工具权限动作</li>
+                      <li>mcp.use 策略</li>
+                      <li>连接状态与登出</li>
+                    </ul>
+                  </section>
+                  <section class="module module-compact">
+                    <h3>装配位置</h3>
+                    <p>mcp.servers 配置 → 生命周期连接 → 工具目录 → 模型可见清单；远程凭据存放于配置之外。</p>
+                  </section>
+                </div>
+              </section>
+
+              <section class="branch branch-skill" aria-labelledby="skill-title">
+                <div class="branch-heading">
+                  <span class="branch-index">02</span>
+                  <div>
+                    <p class="branch-kicker">KNOWLEDGE · 任务方法</p>
+                    <h2 id="skill-title">Skill</h2>
+                    <p class="branch-description">把“这类任务该怎么做”写进可发现、按需加载的知识包，而不是常驻每一次提示。</p>
+                  </div>
+                  <span class="branch-glyph glyph-skill" aria-hidden="true">SK</span>
+                </div>
+                <div class="module-list">
+                  <section class="module">
+                    <h3>包结构</h3>
+                    <ul class="tag-list">
+                      <li class="tech-tip" tabindex="0" data-tip="目录式 Skill 以 SKILL.md 为入口，脚本、参考资料和模板放在同目录下。">SKILL.md</li>
+                      <li>YAML frontmatter</li>
+                      <li>name / description</li>
+                      <li>scripts/</li>
+                      <li>references/</li>
+                      <li>assets/</li>
+                      <li>单文件 .md 兼容</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>发现来源</h3>
+                    <ul class="tag-list">
+                      <li>.opencode/skills</li>
+                      <li>~/.config/opencode/skills</li>
+                      <li class="tech-tip" tabindex="0" data-tip="兼容读取 .claude/skills 与 .agents/skills，便于复用既有技能包。">.claude / .agents</li>
+                      <li>skills 数组</li>
+                      <li>HTTP catalog</li>
+                      <li>Console workspace</li>
+                      <li>嵌套目录分组</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>渐进披露</h3>
+                    <ul class="tag-list">
+                      <li class="tech-tip" tabindex="0" data-tip="每一步只向模型展示允许且有 description 的 skill 的 ID、名称和摘要，不加载正文。">描述先广告</li>
+                      <li class="tech-tip" tabindex="0" data-tip="模型调用 skill 工具并传入精确 ID 后，正文才被注入对话。">skill 工具加载</li>
+                      <li>正文注入</li>
+                      <li>base dir + 文件样例</li>
+                      <li>@skill-id 手动加载</li>
+                      <li>autoinvoke: false</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>选择与权限</h3>
+                    <ul class="tag-list">
+                      <li>ID 由路径决定</li>
+                      <li>同名后者覆盖</li>
+                      <li>skill 权限动作</li>
+                      <li>allow / ask / deny</li>
+                      <li>按 agent 收窄</li>
+                      <li>skill.use 策略</li>
+                    </ul>
+                    <p class="module-note">Skill 只改变“怎么做”，不新增可执行工具，也不能绕过工具权限。</p>
+                  </section>
+                </div>
+              </section>
+
+              <section class="branch branch-plugin" aria-labelledby="plugin-title">
+                <div class="branch-heading">
+                  <span class="branch-index">03</span>
+                  <div>
+                    <p class="branch-kicker">CODE · 深度扩展</p>
+                    <h2 id="plugin-title">Plugin</h2>
+                    <p class="branch-description">用代码注册工具、变换注册表、拦截请求与生命周期事件，覆盖 Server、TUI、GUI 与 RPC 四类部件。</p>
+                  </div>
+                  <span class="branch-glyph glyph-plugin" aria-hidden="true">PL</span>
+                </div>
+                <div class="module-list">
+                  <section class="module">
+                    <h3>四类部件</h3>
+                    <ul class="tag-list">
+                      <li class="tech-tip" tabindex="0" data-tip="Server 部件运行在 Agent 服务端，是工具、钩子、集成、命令和 Agent 的主要扩展点。">Server</li>
+                      <li>TUI</li>
+                      <li>GUI</li>
+                      <li class="tech-tip" tabindex="0" data-tip="RPC 是 server 与 TUI、GUI、客户端共享的类型化方法与事件契约。">RPC</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>可注册与变换的域</h3>
+                    <ul class="tag-list">
+                      <li>Tools</li>
+                      <li>Agents</li>
+                      <li>Providers / Models</li>
+                      <li>MCP servers</li>
+                      <li>Skills</li>
+                      <li>Commands</li>
+                      <li>References</li>
+                      <li>VCS / Worktrees</li>
+                      <li>Websearch</li>
+                      <li>Integrations</li>
+                      <li>Storage</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>生命周期与钩子</h3>
+                    <ul class="tag-list">
+                      <li>setup / cleanup</li>
+                      <li class="tech-tip" tabindex="0" data-tip="prompt 钩子在附件和 skill 解析前改写用户输入，可脱敏、补附件或改为排队投递。">prompt</li>
+                      <li class="tech-tip" tabindex="0" data-tip="context 钩子在每次模型调用前修改系统指令、消息、工具集合与请求参数。">context</li>
+                      <li>compaction</li>
+                      <li>generate / title</li>
+                      <li>fork</li>
+                      <li>event stream</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>加载与治理</h3>
+                    <ul class="tag-list">
+                      <li>npm / git / local</li>
+                      <li>.opencode/plugins</li>
+                      <li>options 注入</li>
+                      <li>热重载</li>
+                      <li>-id 禁用</li>
+                      <li>plugin.use 策略</li>
+                    </ul>
+                    <p class="module-note">插件与服务端同进程运行，应按可信代码对待；策略只决定是否加载，不构成插件沙箱。</p>
+                  </section>
+                </div>
+              </section>
+
+              <section class="branch branch-agent" aria-labelledby="agent-title">
+                <div class="branch-heading">
+                  <span class="branch-index">04</span>
+                  <div>
+                    <p class="branch-kicker">ROLE · 角色与委派</p>
+                    <h2 id="agent-title">Agent</h2>
+                    <p class="branch-description">把系统提示、模型偏好、权限和运行模式打包成一个可选择的角色，也可以作为子代理并行工作。</p>
+                  </div>
+                  <span class="branch-glyph glyph-agent" aria-hidden="true">AG</span>
+                </div>
+                <div class="module-list">
+                  <section class="module">
+                    <h3>定义载体</h3>
+                    <ul class="tag-list">
+                      <li>.opencode/agents/*.md</li>
+                      <li>~/.config/opencode/agents</li>
+                      <li>agents JSON</li>
+                      <li class="tech-tip" tabindex="0" data-tip="Markdown 正文成为该 agent 的 system prompt；frontmatter 与 JSON 字段同构。">正文 = system</li>
+                      <li>嵌套路径成为 ID</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>角色配方</h3>
+                    <ul class="tag-list">
+                      <li>model#variant</li>
+                      <li>permissions</li>
+                      <li class="tech-tip" tabindex="0" data-tip="steps 限制模型步数；最后一步移除工具并要求模型用文本总结。">steps</li>
+                      <li>hidden / disabled</li>
+                      <li>request 覆写</li>
+                      <li>description / color</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>模式与内置角色</h3>
+                    <ul class="tag-list">
+                      <li>primary</li>
+                      <li>subagent</li>
+                      <li>all</li>
+                      <li class="tech-tip" tabindex="0" data-tip="内置可见角色：build 默认编码、plan 只规划、general 通用子代理、explore 只读探索。">build / plan / general / explore</li>
+                      <li>compaction / title / summary</li>
+                      <li>default_agent</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>并行委派</h3>
+                    <ul class="tag-list">
+                      <li>subagent 工具</li>
+                      <li class="tech-tip" tabindex="0" data-tip="子代理在独立子会话中以全新上下文运行，后台执行并在空闲时回报父会话。">独立子会话</li>
+                      <li>后台执行 + 回报</li>
+                      <li>默认深度 1</li>
+                      <li>subagent 权限</li>
+                      <li>可继续同一子会话</li>
+                    </ul>
+                    <p class="module-note">子代理不是更长的提示，而是独立会话、独立模型与独立权限。</p>
+                  </section>
+                </div>
+              </section>
+
+              <section class="branch branch-command" aria-labelledby="command-title">
+                <div class="branch-heading">
+                  <span class="branch-index">05</span>
+                  <div>
+                    <p class="branch-kicker">ENTRY · 提示入口</p>
+                    <h2 id="command-title">Command</h2>
+                    <p class="branch-description">把高频任务固化为 /name 入口，带参数、预设角色与模型，减少每次重复描述。</p>
+                  </div>
+                  <span class="branch-glyph glyph-command" aria-hidden="true">/</span>
+                </div>
+                <div class="module-list">
+                  <section class="module">
+                    <h3>载体与命名</h3>
+                    <ul class="tag-list">
+                      <li>.opencode/commands/*.md</li>
+                      <li>~/.config/opencode/commands</li>
+                      <li>嵌套 → /team/review</li>
+                      <li>JSON commands</li>
+                      <li>内置 /compact</li>
+                      <li>同名后者覆盖</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>参数展开</h3>
+                    <ul class="tag-list">
+                      <li>$ARGUMENTS</li>
+                      <li>$1 … $n</li>
+                      <li>引号分组</li>
+                      <li>缺失位为空串</li>
+                      <li>无占位符时追加参数</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>提交前预执行</h3>
+                    <ul class="tag-list">
+                      <li class="tech-tip" tabindex="0" data-tip="以 ! 加反引号包裹的 shell 块会在提示提交前执行，并把输出插入模板。">!`shell` 块</li>
+                      <li>输出插入提示</li>
+                      <li>在最前展开参数</li>
+                      <li class="tech-tip" tabindex="0" data-tip="shell 块在工具权限流之外执行，只能使用可信来源的命令模板。">不受工具权限流约束</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>执行语义</h3>
+                    <ul class="tag-list">
+                      <li>agent 切换</li>
+                      <li>model 覆写</li>
+                      <li>subagent true / false</li>
+                      <li>默认当前会话</li>
+                      <li>steer / queue</li>
+                      <li>/name 调用</li>
+                    </ul>
+                    <p class="module-note">命令只负责“把什么提示、以什么角色提交”，权限仍由目标 Agent 的规则决定。</p>
+                  </section>
+                </div>
+              </section>
+
+              <section class="branch branch-tool" aria-labelledby="tool-title">
+                <div class="branch-heading">
+                  <span class="branch-index">06</span>
+                  <div>
+                    <p class="branch-kicker">SUBSTRATE · 工具与模型</p>
+                    <h2 id="tool-title">Tool &amp; Model</h2>
+                    <p class="branch-description">内置工具提供最小可用的手脚，Code Mode 负责编排，Provider / Model 提供推理底座。</p>
+                  </div>
+                  <span class="branch-glyph glyph-tool" aria-hidden="true">T</span>
+                </div>
+                <div class="module-list">
+                  <section class="module">
+                    <h3>内置工具</h3>
+                    <ul class="tag-list">
+                      <li>read / glob / grep</li>
+                      <li>edit / write / patch</li>
+                      <li>shell</li>
+                      <li>webfetch / websearch</li>
+                      <li>question</li>
+                      <li>skill</li>
+                      <li>subagent</li>
+                      <li>execute</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>结果与交互</h3>
+                    <ul class="tag-list">
+                      <li>tool_output 上限</li>
+                      <li>超长输出落盘</li>
+                      <li>图片 / PDF 读取</li>
+                      <li>图片缩放</li>
+                      <li>后台任务</li>
+                      <li>进度 / 取消</li>
+                      <li>浏览器命名空间</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>Code Mode</h3>
+                    <ul class="tag-list">
+                      <li class="tech-tip" tabindex="0" data-tip="execute 在受限 JavaScript 运行时中调用工具目录，适合并行独立调用与结果加工。">execute JS</li>
+                      <li>并行调用</li>
+                      <li>fetch</li>
+                      <li>无 fs / import / timer</li>
+                      <li>工具目录</li>
+                      <li class="tech-tip" tabindex="0" data-tip="拒绝 execute 会移除 Code Mode，并把其可触及的工具直接列入模型工具清单。">execute 权限</li>
+                    </ul>
+                  </section>
+                  <section class="module">
+                    <h3>模型底座</h3>
+                    <ul class="tag-list">
+                      <li>provider/model#variant</li>
+                      <li>OpenAI-compatible</li>
+                      <li>WebSocket transport</li>
+                      <li>本地模型</li>
+                      <li>图片模型</li>
+                      <li>重试与退避</li>
+                      <li>缓存预热</li>
+                    </ul>
+                    <p class="module-note">工具是模型的手；模型决定能否用好这只手，也决定每一步的上下文预算。</p>
+                  </section>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="assembly-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">ASSEMBLY PIPELINE · 装配管线</p>
+                <h2 id="assembly-title">从磁盘配置到一次模型请求</h2>
+              </div>
+              <p class="section-intro">扩展不是启动时静态拼好的。配置、注册表与上下文在每个会话、每个模型步骤持续重算。</p>
+            </div>
+            <ol class="pipeline-track pipeline-five">
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="配置从低到高合并：全局、项目、更近目录、系统与托管配置；策略的优先级方向相反。">
+                <span class="pipeline-index">01</span>
+                <h3>合并配置</h3>
+                <p>Managed → System → Console → Global → Project → .opencode，JSONC 支持变量替换。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="在标准目录中发现 agents、commands、skills 与 plugins，并建立 MCP 连接；兼容 Claude / agents 目录。">
+                <span class="pipeline-index">02</span>
+                <h3>发现扩展</h3>
+                <p>扫描全局与项目目录，加载 Markdown、JSON、本地包与远程协议目录。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="同名条目按优先级覆盖，插件 transform 继续改写注册表，策略过滤掉被禁止的 provider、MCP、skill 与 plugin。">
+                <span class="pipeline-index">03</span>
+                <h3>建立注册表</h3>
+                <p>同名后者覆盖；插件变换叠加；策略与权限先做过滤与收窄。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="系统提示 → Code Mode 指引 → MCP / 引用 / Skill 指引 → AGENTS.md 与配置指令 → 日期与环境 → 会话级指令。">
+                <span class="pipeline-index">04</span>
+                <h3>组装上下文</h3>
+                <p>固定顺序拼接系统提示、项目指令、技能目录与按需发现的嵌套规则。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="每次模型请求捕获稳定的模型与工具快照，之后的重载只影响未来请求；权限在工具执行前逐项判定。">
+                <span class="pipeline-index">05</span>
+                <h3>锁定快照</h3>
+                <p>模型 + 工具定义 + 权限规则形成快照，工具执行前再做一次授权判定。</p>
+              </li>
+            </ol>
+          </section>
+
+          <section class="section-block" aria-labelledby="guards-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">GUARDRAILS · 权限与策略</p>
+                <h2 id="guards-title">两套规则，两个方向</h2>
+              </div>
+              <p class="section-intro">Permissions 面向 Agent 的工具使用，可以询问；Policies 面向组织与机器边界，只收紧、不弹窗。</p>
+            </div>
+            <div class="guard-grid">
+              <article class="guard-card">
+                <span class="guard-tag">PERMISSIONS</span>
+                <h3>可交互的工具规则</h3>
+                <p>每条规则由 <code>action</code>、<code>resource</code>、<code>effect</code> 组成，后匹配者胜出；无匹配时默认询问。</p>
+                <ul class="guard-list">
+                  <li><code>allow</code> 直接执行，<code>ask</code> 等待客户端决定，<code>deny</code> 阻止并让模型看到原因。</li>
+                  <li>全局规则先加载，Agent 规则追加在后，因此可以精确收窄而不覆盖全局。</li>
+                  <li>批准选项：仅一次、始终允许并保存项目级规则、拒绝；保存的规则不能覆盖配置的 deny。</li>
+                  <li>Shell 先经过命令扫描器拆分与推断；补丁涉及多个路径时，任一 deny 即整体拒绝。</li>
+                  <li>子代理使用自己的权限，不是父代理权限的子集；子会话创建时继承当时的会话规则。</li>
+                </ul>
+                <pre class="rule-code"><span class="c">// 先宽后窄，最后匹配者生效</span>
+{ <span class="k">"permissions"</span>: [
+  { <span class="k">"action"</span>: <span class="s">"shell"</span>, <span class="k">"resource"</span>: <span class="s">"*"</span>, <span class="k">"effect"</span>: <span class="s">"ask"</span> },
+  { <span class="k">"action"</span>: <span class="s">"shell"</span>, <span class="k">"resource"</span>: <span class="s">"git status *"</span>, <span class="k">"effect"</span>: <span class="s">"allow"</span> },
+  { <span class="k">"action"</span>: <span class="s">"edit"</span>, <span class="k">"resource"</span>: <span class="s">"*.env"</span>, <span class="k">"effect"</span>: <span class="s">"deny"</span> }
+] }</pre>
+              </article>
+
+              <article class="guard-card policy">
+                <span class="guard-tag">POLICIES</span>
+                <h3>不可绕过的硬边界</h3>
+                <p>策略语句是二元的：只允许 <code>allow</code> 或 <code>deny</code>，永不询问，且只会在权限与 Provider 判断之后进一步收紧。</p>
+                <ul class="guard-list">
+                  <li>动作覆盖 <code>provider.use</code>、<code>tool.use</code>、<code>mcp.use</code>、<code>skill.use</code>、<code>plugin.use</code>、<code>websearch.use</code> 与集成连接。</li>
+                  <li><code>tool.use</code> 的资源形如 <code>shell:git push *</code>，在 Agent 规则和“始终允许”之后执行，因此能压过已保存的批准。</li>
+                  <li>优先级方向与普通配置相反：托管配置、系统配置、Console 工作区高于用户与项目。</li>
+                  <li>仓库无法用本地 allow 重新打开组织级 deny；被拒绝的 MCP、Skill 或 Plugin 直接移除或不再加载。</li>
+                  <li>策略不提供插件沙箱，也不配置端点或凭据；它只回答“能不能用”。</li>
+                </ul>
+                <pre class="rule-code"><span class="c">// 组织边界：全局拒绝，仅放行指定来源</span>
+{ <span class="k">"policies"</span>: [
+  { <span class="k">"action"</span>: <span class="s">"provider.use"</span>, <span class="k">"resource"</span>: <span class="s">"*"</span>, <span class="k">"effect"</span>: <span class="s">"deny"</span> },
+  { <span class="k">"action"</span>: <span class="s">"provider.use"</span>, <span class="k">"resource"</span>: <span class="s">"anthropic"</span>, <span class="k">"effect"</span>: <span class="s">"allow"</span> },
+  { <span class="k">"action"</span>: <span class="s">"tool.use"</span>, <span class="k">"resource"</span>: <span class="s">"shell:sudo *"</span>, <span class="k">"effect"</span>: <span class="s">"deny"</span> }
+] }</pre>
+              </article>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="surfaces-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">CLIENTS &amp; CLI · 入口</p>
+                <h2 id="surfaces-title">同一个服务，六种进入方式</h2>
+              </div>
+              <p class="section-intro">TUI、桌面端、Web、API、ACP 与 SDK 共享后台服务；CLI 既启动界面，也管理扩展与生命周期。</p>
+            </div>
+            <div class="surface-grid">
+              <article class="surface-card">
+                <span class="surface-kind">TERMINAL</span>
+                <h3>TUI 与命令行</h3>
+                <p>默认进入全屏终端；也可以只跑一次提示，或作为 ACP Agent 被编辑器启动。</p>
+                <ul class="cmd-list">
+                  <li>opencode</li>
+                  <li>opencode mini</li>
+                  <li>opencode run</li>
+                  <li>opencode acp</li>
+                  <li>--standalone</li>
+                  <li>--server &lt;url&gt;</li>
+                </ul>
+                <span class="mini-note">默认发现或启动一个共享后台服务；--standalone 使用私有服务。</span>
+              </article>
+
+              <article class="surface-card">
+                <span class="surface-kind">DESKTOP &amp; WEB</span>
+                <h3>桌面端与 Web UI</h3>
+                <p>桌面窗口加载 GUI 插件；Web UI 由同一服务提供，通过一次性链接配对并受密码保护。</p>
+                <ul class="cmd-list">
+                  <li>opencode pair</li>
+                  <li>opencode serve</li>
+                  <li>Desktop GUI</li>
+                  <li>GUI plugin</li>
+                  <li>30 天会话</li>
+                  <li>远程隧道</li>
+                </ul>
+                <span class="mini-note">服务默认只监听 localhost；远程访问需显式开启并仍要求服务密码。</span>
+              </article>
+
+              <article class="surface-card">
+                <span class="surface-kind">API &amp; SDK</span>
+                <h3>HTTP API 与嵌入</h3>
+                <p>服务端暴露 OpenAPI；客户端库、进程内 SDK 与插件上下文共享同一套资源模型。</p>
+                <ul class="cmd-list">
+                  <li>/openapi.json</li>
+                  <li>opencode api</li>
+                  <li>@opencode/client</li>
+                  <li>@opencode/client/effect</li>
+                  <li>SDK</li>
+                  <li>ctx.* plugin client</li>
+                </ul>
+                <span class="mini-note">会话、消息、权限、MCP、Skill、Tool 都有对应 API 与事件流。</span>
+              </article>
+
+              <article class="surface-card">
+                <span class="surface-kind">MANAGEMENT CLI</span>
+                <h3>扩展与服务管理</h3>
+                <p>用 CLI 管理 MCP、插件、后台服务和登录，避免手写配置时破坏无关字段。</p>
+                <ul class="cmd-list">
+                  <li>opencode mcp add | list | auth | logout</li>
+                  <li>opencode plugin add | list | check | update | remove</li>
+                  <li>opencode service set | start | status | restart</li>
+                  <li>opencode auth login</li>
+                  <li>opencode debug paths</li>
+                  <li>opencode uninstall</li>
+                </ul>
+                <span class="mini-note">配置变更通常自动热重载；被禁用的共享服务仍可用 --server 显式连接。</span>
+              </article>
+
+              <article class="surface-card">
+                <span class="surface-kind">CODE MODE</span>
+                <h3>脚本化命名空间</h3>
+                <p>execute 提供受限 JavaScript，把多步工具调用收进一次脚本，减少中间结果写回上下文。</p>
+                <ul class="cmd-list">
+                  <li>tools.opencode.session_*</li>
+                  <li>tools.opencode.worktree_*</li>
+                  <li>tools.browser.*</li>
+                  <li>MCP server namespace</li>
+                  <li>parallel calls</li>
+                  <li>fetch</li>
+                </ul>
+                <span class="mini-note">没有文件系统、导入和定时器；所有外部访问都经工具目录或 fetch。</span>
+              </article>
+
+              <article class="surface-card">
+                <span class="surface-kind">TERMINAL SETTINGS</span>
+                <h3>终端偏好与键位</h3>
+                <p>主题、键位和 TUI 插件属于终端设置，与服务端配置分离，不写入 opencode.json。</p>
+                <ul class="cmd-list">
+                  <li>~/.config/opencode/cli.json</li>
+                  <li>themes</li>
+                  <li>keybinds</li>
+                  <li>leader key</li>
+                  <li>TUI plugins</li>
+                  <li>OPENCODE_CLI_CONFIG_CONTENT</li>
+                </ul>
+                <span class="mini-note">TUI 插件在连接远程服务时仍然生效，因此适合做本地交互增强。</span>
+              </article>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="request-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">REQUEST LIFECYCLE · 请求生命周期</p>
+                <h2 id="request-title">一次输入如何走完全程</h2>
+              </div>
+              <p class="section-intro">每一步都可能被插件、权限或策略改变；模型只看到最终装配出的快照。</p>
+            </div>
+            <ol class="pipeline-track pipeline-eight">
+              <li class="pipeline-stage">
+                <span class="pipeline-index">01</span>
+                <h3>进入</h3>
+                <p>TUI、桌面端、Web、API 或 ACP 提交提示，服务端确定目录、Agent 与会话。</p>
+              </li>
+              <li class="pipeline-stage">
+                <span class="pipeline-index">02</span>
+                <h3>准入</h3>
+                <p>prompt 钩子可脱敏、补附件、选择 Skill；随后附件与 Skill 引用被解析。</p>
+              </li>
+              <li class="pipeline-stage">
+                <span class="pipeline-index">03</span>
+                <h3>装配</h3>
+                <p>系统提示、项目指令、引用、MCP 指引、日期环境与会话条目按固定顺序拼接。</p>
+              </li>
+              <li class="pipeline-stage">
+                <span class="pipeline-index">04</span>
+                <h3>推理</h3>
+                <p>context 钩子修改请求；Provider / Model 解析后流式调用，失败则按策略重试。</p>
+              </li>
+              <li class="pipeline-stage">
+                <span class="pipeline-index">05</span>
+                <h3>选工具</h3>
+                <p>模型选择内置工具、MCP 工具、插件工具或 execute 脚本；工具定义来自本轮快照。</p>
+              </li>
+              <li class="pipeline-stage">
+                <span class="pipeline-index">06</span>
+                <h3>授权</h3>
+                <p>Action / Resource 匹配 Agent 规则与已保存批准，再由 Policy 做最终硬拒绝。</p>
+              </li>
+              <li class="pipeline-stage">
+                <span class="pipeline-index">07</span>
+                <h3>执行</h3>
+                <p>工具在权限范围内运行，回报进度、取消信号与截断后的结果；完整输出可落盘。</p>
+              </li>
+              <li class="pipeline-stage">
+                <span class="pipeline-index">08</span>
+                <h3>收尾</h3>
+                <p>结果回填后进入下一步；接近预算时压缩，快照支持撤销，子代理异步回报。</p>
+              </li>
+            </ol>
+          </section>
+
+          <section class="section-block" aria-labelledby="matrix-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">COMPARISON · 选型对照</p>
+                <h2 id="matrix-title">该用哪一种扩展</h2>
+              </div>
+              <p class="section-intro">先判断“要接系统、教方法、改运行时、换角色还是固化入口”，再选择载体与治理方式。</p>
+            </div>
+            <div class="matrix-wrap">
+              <table class="matrix">
+                <thead>
+                  <tr>
+                    <th scope="col">扩展类型</th>
+                    <th scope="col">载体</th>
+                    <th scope="col">何时进入上下文</th>
+                    <th scope="col">执行位置</th>
+                    <th scope="col">治理动作</th>
+                    <th scope="col">最适合</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>MCP</strong><span class="sub">协议化外部能力</span></td>
+                    <td>本地命令 / 远程 URL</td>
+                    <td>连接后注册工具；工具描述进入清单</td>
+                    <td>独立 server 进程或远端</td>
+                    <td><code>&lt;server&gt;_&lt;tool&gt;</code>、<code>mcp.use</code></td>
+                    <td>接 SaaS、数据库、浏览器与团队内部系统</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Skill</strong><span class="sub">任务知识包</span></td>
+                    <td>SKILL.md + 支持文件</td>
+                    <td>仅摘要常驻；命中后加载正文</td>
+                    <td>不执行，改变 Agent 行为</td>
+                    <td><code>skill</code>、<code>skill.use</code></td>
+                    <td>团队流程、发布规范、领域知识与检查清单</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Plugin</strong><span class="sub">代码级扩展</span></td>
+                    <td>npm / git / 本地目录</td>
+                    <td>启动或热重载时注册，可拦截每次请求</td>
+                    <td>Server 同进程；TUI / GUI 各自进程</td>
+                    <td><code>plugin.use</code>、可信来源</td>
+                    <td>自定义工具、审计、脱敏、模型路由与界面面板</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Agent</strong><span class="sub">角色与委派</span></td>
+                    <td>agents/*.md 或 JSON</td>
+                    <td>会话选定或子代理启动时</td>
+                    <td>主会话或独立子会话</td>
+                    <td><code>subagent</code>、Agent 自身权限</td>
+                    <td>只读审查、规划、并行调研与专模专用</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Command</strong><span class="sub">提示入口</span></td>
+                    <td>commands/*.md 或 JSON</td>
+                    <td>用户输入 /name 时展开</td>
+                    <td>当前会话或指定子会话</td>
+                    <td>目标 Agent 的权限</td>
+                    <td>周报、评审、发布、审计等固定任务</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Tool</strong><span class="sub">原生动作</span></td>
+                    <td>内置实现 / 插件注册</td>
+                    <td>每轮以工具定义进入请求</td>
+                    <td>Agent 进程内或受控运行时</td>
+                    <td>按 action 匹配资源</td>
+                    <td>文件、命令、网络、提问与脚本编排</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Instruction</strong><span class="sub">长期规则</span></td>
+                    <td>AGENTS.md / instructions</td>
+                    <td>会话开始与探索目录时注入</td>
+                    <td>仅提示，不执行</td>
+                    <td>无独立权限；受上下文预算约束</td>
+                    <td>构建命令、代码约定与验证要求</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Reference</strong><span class="sub">外部目录</span></td>
+                    <td>本地路径 / Git 仓库</td>
+                    <td>客户端附带别名时</td>
+                    <td>只读缓存检出</td>
+                    <td><code>external_directory</code> 等常规规则</td>
+                    <td>文档站、共享库、跨仓库源码</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="ecosystem-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">ECOSYSTEM · 相关项目与软件</p>
+                <h2 id="ecosystem-title">这张图之外的相关生态</h2>
+              </div>
+              <p class="section-intro">按角色列出可对照的 Agent 运行时、编辑器、框架、协议、模型网关与 MCP 服务；版本为公开包或稳定发布渠道的快照。</p>
+            </div>
+
+            <div class="eco-grid">
+              <article class="eco-card">
+                <span class="eco-tag">RUNTIME / CLI</span>
+                <h3>Agent 运行时与 CLI</h3>
+                <p>直接在终端或本地服务中执行任务，通常自带工具、权限与扩展机制。</p>
+                <ul class="eco-list">
+                  <li>
+                    <strong>OpenCode</strong>
+                    <span class="eco-ver">1.19.6</span>
+                    <span class="eco-desc">本页参照实现；客户端 + 后台服务</span>
+                  </li>
+                  <li>
+                    <strong>Claude Code</strong>
+                    <span class="eco-ver">2.1.327</span>
+                    <span class="eco-desc">Anthropic 终端编码代理；Skills / hooks / MCP</span>
+                  </li>
+                  <li>
+                    <strong>Codex CLI</strong>
+                    <span class="eco-ver">0.170.0</span>
+                    <span class="eco-desc">OpenAI 终端代理；沙箱与审批流</span>
+                  </li>
+                  <li>
+                    <strong>Gemini CLI</strong>
+                    <span class="eco-ver">0.68.0</span>
+                    <span class="eco-desc">Google 开源终端代理；MCP 扩展</span>
+                  </li>
+                  <li>
+                    <strong>Qwen Code</strong>
+                    <span class="eco-ver">0.28.0</span>
+                    <span class="eco-desc">Gemini CLI 路线的开源分支</span>
+                  </li>
+                  <li>
+                    <strong>Aider</strong>
+                    <span class="eco-ver">0.86.2</span>
+                    <span class="eco-desc">Git 原生结对编程 CLI</span>
+                  </li>
+                  <li>
+                    <strong>Goose</strong>
+                    <span class="eco-ver">1.60.1</span>
+                    <span class="eco-desc">Block 开源本地代理；MCP 扩展</span>
+                  </li>
+                  <li>
+                    <strong>Crush</strong>
+                    <span class="eco-ver">0.101.0</span>
+                    <span class="eco-desc">Charm 的终端代理；多模型</span>
+                  </li>
+                  <li>
+                    <strong>OpenHands</strong>
+                    <span class="eco-ver">1.11.0</span>
+                    <span class="eco-desc">开源软件工程代理平台</span>
+                  </li>
+                </ul>
+              </article>
+
+              <article class="eco-card">
+                <span class="eco-tag">EDITOR / IDE</span>
+                <h3>编辑器与 IDE Agent</h3>
+                <p>把 Agent 嵌进编辑、补全、评审与多文件修改的工作流。</p>
+                <ul class="eco-list">
+                  <li>
+                    <strong>Cursor</strong>
+                    <span class="eco-ver is-rolling">滚动发布</span>
+                    <span class="eco-desc">AI 原生编辑器；IDE / CLI / Cloud Agent</span>
+                  </li>
+                  <li>
+                    <strong>Devin Desktop</strong>
+                    <span class="eco-ver">3.14.30819</span>
+                    <span class="eco-desc">原 Windsurf；Devin Local + ACP</span>
+                  </li>
+                  <li>
+                    <strong>VS Code Copilot Chat</strong>
+                    <span class="eco-ver">0.48.1</span>
+                    <span class="eco-desc">编辑器内 agent mode 与 MCP</span>
+                  </li>
+                  <li>
+                    <strong>Cline</strong>
+                    <span class="eco-ver">4.1.26</span>
+                    <span class="eco-desc">VS Code 开源代理；MCP 市场</span>
+                  </li>
+                  <li>
+                    <strong>Roo Code</strong>
+                    <span class="eco-ver">3.54.0</span>
+                    <span class="eco-desc">Cline 分支；多模式与编排</span>
+                  </li>
+                  <li>
+                    <strong>Continue</strong>
+                    <span class="eco-ver">2.1.0</span>
+                    <span class="eco-desc">开源 IDE 助手；可接本地模型</span>
+                  </li>
+                  <li>
+                    <strong>Zed</strong>
+                    <span class="eco-ver">1.28.1</span>
+                    <span class="eco-desc">原生编辑器；ACP 客户端</span>
+                  </li>
+                  <li>
+                    <strong>JetBrains AI / Junie</strong>
+                    <span class="eco-ver is-rolling">滚动发布</span>
+                    <span class="eco-desc">JetBrains IDE 内代理</span>
+                  </li>
+                </ul>
+              </article>
+
+              <article class="eco-card">
+                <span class="eco-tag">FRAMEWORK / ORCHESTRATION</span>
+                <h3>Agent 框架与编排</h3>
+                <p>自己搭建 Agent 时的状态机、角色协作、工具调用与可观测性底座。</p>
+                <ul class="eco-list">
+                  <li>
+                    <strong>LangGraph</strong>
+                    <span class="eco-ver">1.2.22</span>
+                    <span class="eco-desc">状态图编排；持久化与人工介入</span>
+                  </li>
+                  <li>
+                    <strong>CrewAI</strong>
+                    <span class="eco-ver">1.15.41</span>
+                    <span class="eco-desc">角色化多代理协作</span>
+                  </li>
+                  <li>
+                    <strong>OpenAI Agents SDK</strong>
+                    <span class="eco-ver">0.25.0</span>
+                    <span class="eco-desc">handoff / guardrail / tracing</span>
+                  </li>
+                  <li>
+                    <strong>Claude Agent SDK</strong>
+                    <span class="eco-ver">0.3.327</span>
+                    <span class="eco-desc">把 Claude Code 能力嵌入应用</span>
+                  </li>
+                  <li>
+                    <strong>Google ADK</strong>
+                    <span class="eco-ver">2.14.1</span>
+                    <span class="eco-desc">多代理开发套件</span>
+                  </li>
+                  <li>
+                    <strong>Microsoft Agent Framework</strong>
+                    <span class="eco-ver">1.26.0</span>
+                    <span class="eco-desc">AutoGen + Semantic Kernel 路线</span>
+                  </li>
+                  <li>
+                    <strong>PydanticAI</strong>
+                    <span class="eco-ver">2.70.0</span>
+                    <span class="eco-desc">类型化 Agent 框架</span>
+                  </li>
+                  <li>
+                    <strong>Vercel AI SDK</strong>
+                    <span class="eco-ver">7.0.176</span>
+                    <span class="eco-desc">TS 流式 UI 与工具调用</span>
+                  </li>
+                  <li>
+                    <strong>Mastra</strong>
+                    <span class="eco-ver">1.84.0</span>
+                    <span class="eco-desc">TypeScript Agent / workflow 框架</span>
+                  </li>
+                  <li>
+                    <strong>Dify</strong>
+                    <span class="eco-ver">1.19.0</span>
+                    <span class="eco-desc">可视化 LLM 应用与工作流</span>
+                  </li>
+                  <li>
+                    <strong>n8n</strong>
+                    <span class="eco-ver">2.48.4</span>
+                    <span class="eco-desc">自动化工作流；AI 节点</span>
+                  </li>
+                </ul>
+              </article>
+
+              <article class="eco-card">
+                <span class="eco-tag">PROTOCOL / CONVENTION</span>
+                <h3>协议与约定</h3>
+                <p>让工具、编辑器、Agent 与站点之间可以互相发现和调用。</p>
+                <ul class="eco-list">
+                  <li>
+                    <strong>MCP</strong>
+                    <span class="eco-ver is-spec">2026-07-28</span>
+                    <span class="eco-desc">工具、资源、提示与指令协议</span>
+                  </li>
+                  <li>
+                    <strong>MCP TypeScript SDK</strong>
+                    <span class="eco-ver">1.32.2</span>
+                    <span class="eco-desc">TypeScript server / client</span>
+                  </li>
+                  <li>
+                    <strong>MCP Python SDK</strong>
+                    <span class="eco-ver">2.3.0</span>
+                    <span class="eco-desc">Python server / client</span>
+                  </li>
+                  <li>
+                    <strong>MCP Inspector</strong>
+                    <span class="eco-ver">2.15.0</span>
+                    <span class="eco-desc">MCP 调试与检查工具</span>
+                  </li>
+                  <li>
+                    <strong>ACP</strong>
+                    <span class="eco-ver is-spec">v1</span>
+                    <span class="eco-desc">编辑器与 Agent 的 stdio 协议</span>
+                  </li>
+                  <li>
+                    <strong>A2A</strong>
+                    <span class="eco-ver">1.1.0-rc</span>
+                    <span class="eco-desc">Agent 间协作协议</span>
+                  </li>
+                  <li>
+                    <strong>AGENTS.md</strong>
+                    <span class="eco-ver is-spec">约定</span>
+                    <span class="eco-desc">仓库级 Agent 指令</span>
+                  </li>
+                  <li>
+                    <strong>SKILL.md</strong>
+                    <span class="eco-ver is-spec">约定</span>
+                    <span class="eco-desc">技能包目录与 frontmatter</span>
+                  </li>
+                  <li>
+                    <strong>JSON-RPC</strong>
+                    <span class="eco-ver is-spec">2.0</span>
+                    <span class="eco-desc">MCP / ACP 的消息基础</span>
+                  </li>
+                  <li>
+                    <strong>OpenAPI</strong>
+                    <span class="eco-ver is-spec">3.x</span>
+                    <span class="eco-desc">HTTP API 契约</span>
+                  </li>
+                  <li>
+                    <strong>llms.txt</strong>
+                    <span class="eco-ver is-spec">约定</span>
+                    <span class="eco-desc">面向 LLM 的站点索引</span>
+                  </li>
+                </ul>
+              </article>
+
+              <article class="eco-card">
+                <span class="eco-tag">MODEL / GATEWAY</span>
+                <h3>模型、推理与网关</h3>
+                <p>模型是 Agent 的推理底座；网关负责统一凭据、路由、限额与成本。</p>
+                <ul class="eco-list">
+                  <li>
+                    <strong>Anthropic Claude</strong>
+                    <span class="eco-ver is-rolling">托管服务</span>
+                    <span class="eco-desc">工具调用与长上下文</span>
+                  </li>
+                  <li>
+                    <strong>OpenAI GPT</strong>
+                    <span class="eco-ver is-rolling">托管服务</span>
+                    <span class="eco-desc">Responses 与工具生态</span>
+                  </li>
+                  <li>
+                    <strong>Google Gemini</strong>
+                    <span class="eco-ver is-rolling">托管服务</span>
+                    <span class="eco-desc">多模态与长上下文</span>
+                  </li>
+                  <li>
+                    <strong>Ollama</strong>
+                    <span class="eco-ver">0.40.17</span>
+                    <span class="eco-desc">本地模型运行与 API</span>
+                  </li>
+                  <li>
+                    <strong>LM Studio / Bionic</strong>
+                    <span class="eco-ver">1.2.1</span>
+                    <span class="eco-desc">本地模型桌面端；Bionic 代理</span>
+                  </li>
+                  <li>
+                    <strong>vLLM</strong>
+                    <span class="eco-ver">0.34.0</span>
+                    <span class="eco-desc">高吞吐推理服务</span>
+                  </li>
+                  <li>
+                    <strong>LiteLLM</strong>
+                    <span class="eco-ver">1.110.0</span>
+                    <span class="eco-desc">多 provider 统一网关</span>
+                  </li>
+                  <li>
+                    <strong>OpenRouter</strong>
+                    <span class="eco-ver is-rolling">托管服务</span>
+                    <span class="eco-desc">多模型路由与计费</span>
+                  </li>
+                  <li>
+                    <strong>models.dev</strong>
+                    <span class="eco-ver is-rolling">托管目录</span>
+                    <span class="eco-desc">模型能力与价格目录</span>
+                  </li>
+                </ul>
+              </article>
+
+              <article class="eco-card">
+                <span class="eco-tag">MCP SERVICE / OPS</span>
+                <h3>MCP 服务与运行支撑</h3>
+                <p>把外部系统接成工具，并为 Agent 提供观测、评测与隔离执行环境。</p>
+                <ul class="eco-list">
+                  <li>
+                    <strong>Playwright MCP</strong>
+                    <span class="eco-ver">0.0.85</span>
+                    <span class="eco-desc">浏览器自动化 MCP</span>
+                  </li>
+                  <li>
+                    <strong>Context7 MCP</strong>
+                    <span class="eco-ver">4.7.3</span>
+                    <span class="eco-desc">文档检索 MCP</span>
+                  </li>
+                  <li>
+                    <strong>Sentry MCP</strong>
+                    <span class="eco-ver">0.49.0</span>
+                    <span class="eco-desc">错误与 issue 上下文</span>
+                  </li>
+                  <li>
+                    <strong>GitHub MCP Server</strong>
+                    <span class="eco-ver">2.2.0</span>
+                    <span class="eco-desc">仓库、PR 与 issue 操作</span>
+                  </li>
+                  <li>
+                    <strong>Reference servers</strong>
+                    <span class="eco-ver">2.3.0 / 2.1.1</span>
+                    <span class="eco-desc">Filesystem / Memory 等官方示例</span>
+                  </li>
+                  <li>
+                    <strong>MCP Fetch / Git / Time</strong>
+                    <span class="eco-ver">2026.11.11</span>
+                    <span class="eco-desc">常用 Python MCP server</span>
+                  </li>
+                  <li>
+                    <strong>Langfuse</strong>
+                    <span class="eco-ver">3.39.2</span>
+                    <span class="eco-desc">LLM 观测与评测 SDK</span>
+                  </li>
+                  <li>
+                    <strong>LangSmith</strong>
+                    <span class="eco-ver">0.15.0</span>
+                    <span class="eco-desc">trace / eval 平台 SDK</span>
+                  </li>
+                  <li>
+                    <strong>OpenTelemetry Collector</strong>
+                    <span class="eco-ver">1.71.0</span>
+                    <span class="eco-desc">统一遥测采集</span>
+                  </li>
+                  <li>
+                    <strong>E2B</strong>
+                    <span class="eco-ver">2.64.0</span>
+                    <span class="eco-desc">Agent 沙箱执行环境</span>
+                  </li>
+                  <li>
+                    <strong>Daytona SDK</strong>
+                    <span class="eco-ver">0.232.0</span>
+                    <span class="eco-desc">开发环境与沙箱 SDK</span>
+                  </li>
+                </ul>
+              </article>
+            </div>
+            <p class="eco-note">版本为 npm / PyPI / GitHub Releases 或官方稳定发布渠道的公开快照，检查于 2026-11-18；闭源桌面端与托管服务通常没有可引用的独立版本，以官方滚动更新为准。此清单用于生态定位，不表示本页架构依赖或功能等价。</p>
+          </section>
+
+          <section class="section-block" aria-labelledby="tradeoffs-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">CROSS-CUTTING · 设计取舍</p>
+                <h2 id="tradeoffs-title">六个贯穿所有扩展的约束</h2>
+              </div>
+              <p class="section-intro">扩展点越多，越需要把上下文、信任、重载与可复现性当作一等约束。</p>
+            </div>
+            <div class="crosscut-grid">
+              <article class="crosscut-item tech-tip" tabindex="0" data-tip="上下文预算：工具定义、项目指令、Skill 目录和 MCP 指引都占 token；按需加载、压缩与输出截断共同控制成本。">
+                <span class="crosscut-tag">CTX</span>
+                <h3>上下文预算</h3>
+                <p>能晚加载的就晚加载，能截断的就截断；把最贵的上下文留给当前步骤。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" data-tip="信任边界：远端的 MCP 输出、插件的同进程代码、shell 的主机权限，是三个不同层级的风险。">
+                <span class="crosscut-tag">TRUST</span>
+                <h3>信任边界</h3>
+                <p>协议数据不等于指令；插件是代码；shell 继承宿主用户权限。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" data-tip="热重载：配置、agents、commands、skills、MCP 与插件保存后自动重载；未被监视的本地依赖仍可能需要重启。">
+                <span class="crosscut-tag">HOT</span>
+                <h3>热重载</h3>
+                <p>改配置不重启；本地未监视依赖与已捕获的注册变换需要显式 reload。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" data-tip="可复现：版本锁定、配置分层、快照与工作树共同保证同一任务能回到可检查的起点。">
+                <span class="crosscut-tag">REPRO</span>
+                <h3>可复现</h3>
+                <p>锁版本、留快照、用工作树隔离并行任务，避免“只在我机器上能跑”。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" data-tip="并行与隔离：子代理拥有独立上下文和权限，工具可在后台执行，Code Mode 可并行独立调用。">
+                <span class="crosscut-tag">CONC</span>
+                <h3>并行与隔离</h3>
+                <p>子会话、后台任务与脚本并行，减少等待，也避免中间结果污染主上下文。</p>
+              </article>
+              <article class="crosscut-item tech-tip" tabindex="0" data-tip="可观测性：结构化日志、token 与成本、重试状态、压缩事件和工具调用记录，构成排查 Agent 行为的基本证据。">
+                <span class="crosscut-tag">OBS</span>
+                <h3>可观测性</h3>
+                <p>记录模型、工具、权限与压缩事件；失败时先定位是服务、项目还是单次请求。</p>
+              </article>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>ETHAN WILKINS · AGENT ARCHITECTURE</span>
+        <span class="footer-links"><a href="index.html">← 技术栈总览</a> <b>×</b> <a href="https://opencode.ai/docs/" target="_blank" rel="noopener noreferrer">OpenCode V2 文档 ↗</a></span>
+      </footer>
+    </div>
+  </body>
+</html>

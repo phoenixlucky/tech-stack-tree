@@ -110,7 +110,36 @@ body::before {
   font-weight: 500;
   letter-spacing: 0;
 }
+.header-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  padding: 3px;
+  border: 1px solid rgba(226, 233, 227, .9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .55);
+}
+.header-link {
+  padding: 6px 11px;
+  border-radius: 999px;
+  color: #5d7169;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .16s ease, background-color .16s ease;
+}
+.header-link:hover { color: var(--green-deep); background: rgba(231, 243, 238, .8); }
+.header-link:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.header-link.is-current {
+  color: var(--green-deep);
+  background: var(--green-soft);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .85) inset;
+}
 .header-note {
+  margin-left: 2px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -819,6 +848,14 @@ h1 span {
 }
 .footer-links { display: inline-flex; align-items: center; gap: 2px; }
 .site-footer b { padding: 0 5px; color: #5e7b70; font-weight: 600; }
+.site-footer a {
+  color: #4d6f63;
+  font-weight: 700;
+  text-decoration-color: rgba(77, 111, 99, .35);
+  text-underline-offset: 3px;
+}
+.site-footer a:hover { color: var(--green-deep); }
+.site-footer a:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 4px; }
 
 /* ---------- Tooltips ---------- */
 .tech-tip { position: relative; cursor: help; outline: none; }
@@ -967,6 +1004,7 @@ a:focus-visible { outline: 3px solid var(--green); outline-offset: 4px; border-r
 @media (max-width: 960px) {
   .page-shell { width: min(730px, calc(100% - 40px)); }
   .site-header { top: 10px; margin-top: 10px; }
+  .header-note { display: none; }
   .intro { padding: 52px 0 32px; }
   .intro-row { align-items: flex-start; flex-direction: column; gap: 22px; }
   .intro-aside { width: 100%; align-items: flex-start; flex-direction: row; flex-wrap: wrap; padding-bottom: 0; }
@@ -1004,6 +1042,9 @@ a:focus-visible { outline: 3px solid var(--green); outline-offset: 4px; border-r
 @media (max-width: 620px) {
   .page-shell { width: calc(100% - 32px); }
   .site-header { min-height: 56px; padding: 0 12px 0 14px; border-radius: 14px; }
+  .header-nav { padding: 2px; }
+  .header-link { padding: 6px 9px; font-size: 10px; }
+  .header-link:not(.is-current) { display: none; }
   .brand { font-size: 10px; gap: 9px; }
   .brand-mark { width: 27px; height: 27px; font-size: 16px; }
   .header-note { font-size: 9.5px; padding: 5px 9px; }
