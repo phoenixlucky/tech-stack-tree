@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f2">
+    <meta name="description" content="MCP 架构图谱：从 Host、Client、Server 三层角色，到 JSON-RPC 生命周期、Tools / Resources / Prompts 原语、传输与授权，再到把工具变成代码的 Code Mode 上下文经济学。">
+    <title>MCP 架构图谱 · 协议、上下文与 Code Mode</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mcp.css">
+    <script src="tooltips.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Ethan Wilkins 技术栈首页">
+          <span class="brand-mark" aria-hidden="true">E</span>
+          <span>ETHAN WILKINS</span>
+        </a>
+        <nav class="header-nav" aria-label="页面导航">
+          <a class="header-link" href="index.html">技术栈总览</a>
+          <a class="header-link" href="agent.html">Agent 架构</a>
+          <a class="header-link is-current" href="mcp.html" aria-current="page">MCP 架构</a>
+        </nav>
+        <span class="header-note"><span class="header-pulse" aria-hidden="true"></span>协议 · 上下文 · 沙箱</span>
+      </header>
+
+      <main id="top">
+        <section class="intro" aria-labelledby="page-title">
+          <p class="eyebrow"><span class="eyebrow-dot"></span> MCP BLUEPRINT <span class="eyebrow-line"></span> 03 / 03</p>
+          <div class="intro-row">
+            <div class="intro-main">
+              <h1 id="page-title">MCP <span>架构图谱</span></h1>
+              <p class="intro-copy">从 Host、Client、Server 三层角色，到无状态 JSON-RPC 请求、四种核心原语、传输与授权，再到把工具变成代码的 Code Mode——把协议层、上下文预算和执行边界放在同一张图上。</p>
+              <p class="version-note">以 MCP 规范 2026-07-28（无状态请求）为参照 · 悬停或聚焦条目查看说明</p>
+            </div>
+            <div class="intro-aside">
+              <div class="version-pill"><span class="status-dot"></span> MCP <strong>JSON-RPC 2.0</strong> <span>2026-07-28</span></div>
+              <div class="stack-chips" aria-label="MCP 架构能力标签">
+                <span class="stack-chip chip-host">Host</span>
+                <span class="stack-chip chip-client">Client</span>
+                <span class="stack-chip chip-server">Server</span>
+                <span class="stack-chip chip-mcp">stdio / HTTP</span>
+                <span class="stack-chip chip-code">Code Mode</span>
+                <span class="stack-chip chip-sandbox">Sandbox</span>
+                <span class="stack-chip chip-auth">OAuth</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="architecture" aria-label="MCP 架构总览">
+          <div class="root-node">
+            <span class="root-symbol" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="root-label">MCP HOST</span>
+            <strong>Agent Runtime</strong>
+            <span class="root-version">model · context · consent</span>
+          </div>
+          <div class="trunk" aria-hidden="true"></div>
+
+          <p class="flow-caption">两条路径 · TWO PATHS</p>
+          <div class="flow-paths">
+            <div class="flow-path">
+              <span class="flow-path-label"><b>CALL</b> 直接调用</span>
+              <div class="flow-ribbon" aria-label="MCP 直接工具调用路径">
+                <span class="flow-step flow-ui">模型意图</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">工具选择</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-mcp">MCP Client</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-mcp">JSON-RPC</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-mcp">MCP Server</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">外部系统</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">结果回填</span>
+              </div>
+            </div>
+            <div class="flow-path">
+              <span class="flow-path-label"><b>CODE</b> 脚本编排</span>
+              <div class="flow-ribbon" aria-label="MCP Code Mode 路径">
+                <span class="flow-step flow-ui">工具目录</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">按需打开 .ts</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">沙箱执行</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">过滤 / 循环</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-mcp">精简结果</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">模型</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="trunk trunk-lower" aria-hidden="true"></div>
+
+          <section class="section-block" aria-labelledby="roles-title" style="margin-top: 0; padding-top: 0; border-top: 0;">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">TOPOLOGY · 三角色</p>
+                <h2 id="roles-title">谁拥有模型，谁拥有连接，谁拥有数据</h2>
+              </div>
+              <p class="section-intro">Host 管上下文与同意，Client 管一条连接，Server 管能力与数据。三者职责不混，协议才不会退化成又一层集成胶水。</p>
+            </div>
+
+            <div class="topology" role="img" aria-label="一个 Host 持有多个 Client，每个 Client 对应一个 Server，请求逐条自包含">
+              <div class="topo-host">
+                <span class="topo-label">HOST · 1</span>
+                <strong>Agent Runtime</strong>
+                <p>模型 · 上下文 · 用户同意</p>
+                <div class="topo-clients">
+                  <span class="topo-client"><b>Client A</b> stdio</span>
+                  <span class="topo-client"><b>Client B</b> HTTP</span>
+                  <span class="topo-client"><b>Client C</b> HTTP</span>
+                </div>
+              </div>
+              <div class="topo-link">
+                <span>JSON-RPC</span>
+                <b aria-hidden="true">⇄</b>
+                <span>每请求自包含</span>
+              </div>
+              <div class="topo-servers">
+                <span class="topo-server"><b>Filesystem</b> 本地进程</span>
+                <span class="topo-server"><b>CRM</b> 远程服务</span>
+                <span class="topo-server"><b>Browser</b> 远程服务</span>
+              </div>
+            </div>
+
+            <div class="role-grid">
+              <article class="role-card role-host tech-tip" tabindex="0" data-tip="Host 是承载模型的应用：它决定会话上下文、可见工具、用户同意和审计，并为一个 server 创建一个 client。">
+                <span class="role-kicker">ORCHESTRATOR</span>
+                <div class="role-head"><h3>Host</h3><span class="role-count">1</span></div>
+                <p>承载模型与上下文，决定接入哪些 server、哪些工具可见、哪些调用需要人确认。</p>
+                <ul class="role-list">
+                  <li><b>拥有</b> 模型、会话、上下文预算</li>
+                  <li><b>创建</b> 每个连接一个 Client</li>
+                  <li><b>治理</b> 同意、权限与审计</li>
+                </ul>
+              </article>
+              <article class="role-card role-client tech-tip" tabindex="0" data-tip="Client 是 Host 内部的连接器：与一个 Server 对应，每个请求都携带协议版本与客户端能力，并管理订阅与通知。">
+                <span class="role-kicker">CONNECTOR</span>
+                <div class="role-head"><h3>Client</h3><span class="role-count">1 : 1</span></div>
+                <p>与一个 Server 对应，负责路由请求、声明能力、管理订阅与通知。</p>
+                <ul class="role-list">
+                  <li><b>声明</b> 每个请求的版本与能力</li>
+                  <li><b>缓存</b> 工具、资源、提示目录</li>
+                  <li><b>转发</b> 请求、进度与取消</li>
+                </ul>
+              </article>
+              <article class="role-card role-server tech-tip" tabindex="0" data-tip="Server 暴露 Tools、Resources 与 Prompts，并把调用落到外部系统；它可以是本地子进程，也可以是远程 HTTP 服务。">
+                <span class="role-kicker">CAPABILITY</span>
+                <div class="role-head"><h3>Server</h3><span class="role-count">N</span></div>
+                <p>把外部系统的能力包装成标准原语；可以是本地子进程，也可以是远程服务。</p>
+                <ul class="role-list">
+                  <li><b>暴露</b> Tools / Resources / Prompts</li>
+                  <li><b>执行</b> 在自己的信任边界内</li>
+                  <li><b>负责</b> 自身鉴权、配额与错误</li>
+                </ul>
+              </article>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="protocol-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">PROTOCOL CORE · 协议内核</p>
+                <h2 id="protocol-title">无状态请求，双向通知</h2>
+              </div>
+              <p class="section-intro">不是 REST 资源树，也不是带会话状态的 RPC：请求由 Client 发往 Server，响应回到 Client，通知双向流动；每条请求自带版本与能力。</p>
+            </div>
+
+            <div class="protocol-grid">
+              <article class="mcp-panel">
+                <div class="panel-head">
+                  <span class="panel-tag">WIRE</span>
+                  <h3>消息只有三种</h3>
+                </div>
+                <p>请求带 <code>id</code>，响应按 <code>id</code> 配对，通知没有 <code>id</code> 且不需要回复。每个请求的 <code>_meta</code> 自带协议版本与客户端能力。</p>
+                <pre class="mcp-code"><span class="c">// 请求 · 客户端发起，自带上下文</span>
+{ <span class="k">"jsonrpc"</span>: <span class="s">"2.0"</span>, <span class="k">"id"</span>: 42,
+  <span class="k">"method"</span>: <span class="s">"tools/call"</span>,
+  <span class="k">"params"</span>: {
+    <span class="k">"name"</span>: <span class="s">"crm_lookup"</span>,
+    <span class="k">"arguments"</span>: { <span class="k">"email"</span>: <span class="s">"a@b.c"</span> },
+    <span class="k">"_meta"</span>: {
+      <span class="k">"io.modelcontextprotocol/protocolVersion"</span>: <span class="s">"2026-07-28"</span>,
+      <span class="k">"io.modelcontextprotocol/clientCapabilities"</span>: {}
+    } } }
+
+<span class="c">// 响应 · resultType 表示结果类型</span>
+{ <span class="k">"jsonrpc"</span>: <span class="s">"2.0"</span>, <span class="k">"id"</span>: 42,
+  <span class="k">"result"</span>: {
+    <span class="k">"resultType"</span>: <span class="s">"complete"</span>,
+    <span class="k">"content"</span>: [...], <span class="k">"isError"</span>: false } }
+
+<span class="c">// 通知 · 不要回复</span>
+{ <span class="k">"jsonrpc"</span>: <span class="s">"2.0"</span>,
+  <span class="k">"method"</span>: <span class="s">"notifications/subscriptions/acknowledged"</span> }</pre>
+                <p class="panel-note">方法名按 <code>domain/action</code> 组织：<code>tools/list</code>、<code>tools/call</code>、<code>resources/read</code>、<code>prompts/get</code>。</p>
+              </article>
+
+              <article class="mcp-panel">
+                <div class="panel-head">
+                  <span class="panel-tag">STATELESS</span>
+                  <h3>先发现，再按请求声明</h3>
+                </div>
+                <p><code>server/discover</code> 是服务端必须实现的能力发现入口；客户端可选地提前拿到版本、能力与 instructions。之后的每个请求仍要自带 <code>_meta</code>，不能依赖连接上的前置状态。</p>
+                <ol class="lifecycle-list">
+                  <li><b>server/discover</b><span>客户端可选调用；返回支持的版本、能力、instructions</span></li>
+                  <li><b>request + _meta</b><span>每请求携带 protocolVersion 与 clientCapabilities</span></li>
+                  <li><b>list / get / read</b><span>建立工具、资源与提示目录</span></li>
+                  <li><b>call / progress / cancel</b><span>执行、进度、取消与超时</span></li>
+                  <li><b>input_required</b><span>服务端请求补充输入，例如 elicitation</span></li>
+                  <li><b>subscriptions/listen</b><span>订阅目录或资源通知；连接不是会话</span></li>
+                </ol>
+                <div class="transport-row">
+                  <span class="transport-chip"><b>stdio</b> 本机子进程</span>
+                  <span class="transport-chip"><b>Streamable HTTP</b> 远程</span>
+                  <span class="transport-chip is-legacy"><b>HTTP + SSE</b> 兼容</span>
+                </div>
+                <p class="panel-note">stdio 用 stdin / stdout 传消息，stderr 留给日志；HTTP 使用 POST 与可选的事件流，并校验 Origin。</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="primitives-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">PRIMITIVES · 原语</p>
+                <h2 id="primitives-title">四种核心原语，外加可协商扩展</h2>
+              </div>
+              <p class="section-intro">Tools 由模型决定，Resources 由应用决定，Prompts 由用户决定；Elicitation 把补充输入的请求送回 Host。Tasks 与 Skills 等扩展按 capability 协商。</p>
+            </div>
+
+            <div class="primitive-grid">
+              <article class="primitive-card tech-tip" tabindex="0" data-tip="Tools 是模型可调用的动作，通常有输入 schema 与副作用；工具定义会占用上下文，是 Code Mode 要解决的主要成本。">
+                <div class="primitive-head">
+                  <span class="primitive-index">01</span>
+                  <span class="dir-badge dir-server">S → C</span>
+                </div>
+                <h3>Tools</h3>
+                <p>模型可调用的动作。有 JSON Schema 输入、结构化结果，也可能产生副作用。</p>
+                <ul class="primitive-meta">
+                  <li><b>控制</b> 模型</li>
+                  <li><b>方法</b> tools/list · tools/call</li>
+                  <li><b>上下文</b> 定义常驻成本最高</li>
+                </ul>
+              </article>
+
+              <article class="primitive-card tech-tip" tabindex="0" data-tip="Resources 是 URI 可寻址的只读上下文，由应用决定何时读取；支持模板、订阅和变更通知。">
+                <div class="primitive-head">
+                  <span class="primitive-index">02</span>
+                  <span class="dir-badge dir-server">S → C</span>
+                </div>
+                <h3>Resources</h3>
+                <p>按 URI 寻址的只读上下文，适合文档、文件、记录和模板集合。</p>
+                <ul class="primitive-meta">
+                  <li><b>控制</b> 应用 / 用户</li>
+                  <li><b>方法</b> resources/list · read</li>
+                  <li><b>上下文</b> 读取时才进入</li>
+                </ul>
+              </article>
+
+              <article class="primitive-card tech-tip" tabindex="0" data-tip="Prompts 是可复用提示模板，通常注册成斜杠命令，由用户显式触发，而不是模型自行决定。">
+                <div class="primitive-head">
+                  <span class="primitive-index">03</span>
+                  <span class="dir-badge dir-server">S → C</span>
+                </div>
+                <h3>Prompts</h3>
+                <p>参数化的提示模板，通常变成 <code>/server:prompt</code> 命令，由用户显式选择。</p>
+                <ul class="primitive-meta">
+                  <li><b>控制</b> 用户</li>
+                  <li><b>方法</b> prompts/list · get</li>
+                  <li><b>上下文</b> 触发时才展开</li>
+                </ul>
+              </article>
+
+              <article class="primitive-card tech-tip" tabindex="0" data-tip="Elicitation 让 Server 在请求过程中向用户发起结构化输入请求，适合补参数或确认敏感操作；它通过 InputRequiredResult 表达。">
+                <div class="primitive-head">
+                  <span class="primitive-index">04</span>
+                  <span class="dir-badge dir-client">S → C 请求</span>
+                </div>
+                <h3>Elicitation</h3>
+                <p>服务端返回 <code>input_required</code>，请用户补参数或确认敏感操作，再带着输入重发原请求。</p>
+                <ul class="primitive-meta">
+                  <li><b>控制</b> 用户在环</li>
+                  <li><b>方式</b> InputRequiredResult</li>
+                  <li><b>上下文</b> 只回填用户输入</li>
+                </ul>
+              </article>
+
+              <article class="primitive-card tech-tip" tabindex="0" data-tip="Tasks 是 2026-07-28 的扩展：长任务异步执行，支持轮询、执行中输入与持久句柄，适合跨请求的部署、批处理与审批流程。">
+                <div class="primitive-head">
+                  <span class="primitive-index">05</span>
+                  <span class="dir-badge dir-ext">EXT</span>
+                </div>
+                <h3>Tasks</h3>
+                <p>长任务异步执行，支持轮询、执行中输入与持久句柄，适合部署、批处理与人工审批。</p>
+                <ul class="primitive-meta">
+                  <li><b>控制</b> 双方协商</li>
+                  <li><b>方式</b> Tasks 扩展</li>
+                  <li><b>上下文</b> 用显式句柄续接</li>
+                </ul>
+              </article>
+
+              <article class="primitive-card tech-tip" tabindex="0" data-tip="Skills over MCP 把结构化任务说明通过 MCP 发现和加载，让 Agent 按需获得方法、脚本与检查清单，而不是常驻上下文。">
+                <div class="primitive-head">
+                  <span class="primitive-index">06</span>
+                  <span class="dir-badge dir-ext">EXT</span>
+                </div>
+                <h3>Skills over MCP</h3>
+                <p>通过 MCP 发现并加载结构化任务说明，把可复用方法、脚本与检查清单带进工作流。</p>
+                <ul class="primitive-meta">
+                  <li><b>控制</b> 双方协商</li>
+                  <li><b>方式</b> Skills 扩展</li>
+                  <li><b>上下文</b> 命中后才加载</li>
+                </ul>
+              </article>
+            </div>
+
+            <p class="primitive-footnote">另有 <code>completions</code>、<code>progress</code>、<code>cancellation</code> 等通用能力；Sampling、Roots 与 Logging 在 2026-07-28 已弃用，旧实现仍可能通过早期修订版暴露它们。扩展始终需要双方显式声明。</p>
+          </section>
+
+          <section class="section-block" aria-labelledby="context-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">CONTEXT ECONOMICS · 上下文经济学</p>
+                <h2 id="context-title">把工具变成代码，而不是把工具塞满上下文</h2>
+              </div>
+              <p class="section-intro">Code Mode 不是 MCP 协议的一部分，而是 Host 侧对工具的一种装配方式。Anthropic 工程团队给出的同一任务对照：150,000 tokens 的工具上下文，按需读取后约 2,000 tokens，节省 98.7%。关键不是换模型，而是换调用方式。</p>
+            </div>
+
+            <p class="codemode-sequence" aria-label="Code Mode 路径：工具、文件、代码、过滤、答案">
+              <span>tools</span><b aria-hidden="true">→</b><span>files</span><b aria-hidden="true">→</b><span>code</span><b aria-hidden="true">→</b><span>filter</span><b aria-hidden="true">→</b><span>answer</span>
+            </p>
+
+            <div class="budget-card">
+              <div class="budget-row">
+                <div class="budget-label">
+                  <span>DIRECT TOOL CALLS</span>
+                  <strong>所有工具定义常驻上下文</strong>
+                </div>
+                <span class="budget-value">≈ 150,000 tokens</span>
+                <div class="budget-bar"><span class="budget-fill is-full"></span></div>
+              </div>
+              <div class="budget-row is-after">
+                <div class="budget-label">
+                  <span>CODE MODE</span>
+                  <strong>列目录，只打开当前需要的 2 个文件</strong>
+                </div>
+                <span class="budget-value is-low">≈ 2,000 tokens</span>
+                <div class="budget-bar"><span class="budget-fill is-low"></span></div>
+              </div>
+              <div class="budget-foot">
+                <span class="saving-badge">−98.7%</span>
+                <p>示例来自 Anthropic《Code execution with MCP》（2025-11-04）：同一批工具、同一任务，只改变工具呈现方式与结果回传路径。</p>
+              </div>
+            </div>
+
+            <div class="codemode-grid">
+              <article class="cm-card tech-tip" tabindex="0" data-tip="把每个 MCP 工具映射成服务器目录下的一个 .ts 文件，模型通过列目录和读文件发现能力，而不是一次性读完所有 schema。">
+                <span class="cm-index">01</span>
+                <h3>工具即文件</h3>
+                <p>每个 MCP 工具变成一个 <code>.ts</code> 文件，按 server 分目录；模型先看目录，再打开需要的接口。</p>
+                <pre class="cm-code">servers/
+├── google-drive/
+│   ├── getDocument.ts
+│   └── index.ts
+└── salesforce/
+    └── updateRecord.ts</pre>
+              </article>
+
+              <article class="cm-card tech-tip" tabindex="0" data-tip="渐进披露：模型只加载当前任务需要的定义；也可以用 search_tools 按名称、摘要或完整 schema 分级检索。">
+                <span class="cm-index">02</span>
+                <h3>按需加载</h3>
+                <p>先列 server，再读工具文件；也可以提供 <code>search_tools</code>，按名称、摘要、完整 schema 分级返回。</p>
+                <div class="cm-facts">
+                  <span><b>150k</b> → <b>2k</b></span>
+                  <span>打开 2 个文件</span>
+                  <span>98.7% 节省</span>
+                </div>
+              </article>
+
+              <article class="cm-card tech-tip" tabindex="0" data-tip="在沙箱里过滤、聚合和裁剪数据，只把模型真正需要的少量结果写回上下文。">
+                <span class="cm-index">03</span>
+                <h3>在代码里过滤</h3>
+                <p>10,000 行表格在沙箱里筛选，模型只看到 5 行；大文档、join 和聚合都不必穿过上下文。</p>
+                <pre class="cm-code"><span class="k">const</span> rows = <span class="k">await</span> gdrive.getSheet({ sheetId });
+<span class="k">const</span> pending = rows.filter(r =&gt; r.Status === <span class="s">'pending'</span>);
+console.log(pending.slice(<span class="s">0</span>, <span class="s">5</span>));</pre>
+              </article>
+
+              <article class="cm-card tech-tip" tabindex="0" data-tip="轮询、重试和条件分支放进一次脚本执行，避免每个检查点都往返模型，降低延迟与 token 消耗。">
+                <span class="cm-index">04</span>
+                <h3>在代码里循环</h3>
+                <p>等部署完成、轮询 Slack、重试失败请求，都在一次脚本里完成，不再每一步都回到模型。</p>
+                <pre class="cm-code"><span class="k">while</span> (!found) {
+  <span class="k">const</span> msgs = <span class="k">await</span> slack.history({ channel });
+  found = msgs.some(m =&gt; m.text.includes(<span class="s">'deploy complete'</span>));
+  <span class="k">if</span> (!found) <span class="k">await</span> sleep(<span class="s">5000</span>);
+}</pre>
+              </article>
+
+              <article class="cm-card tech-tip" tabindex="0" data-tip="中间结果默认留在执行环境；敏感字段可先 token 化再让模型看到，真实值由 MCP Client 在调用外部系统时还原。">
+                <span class="cm-index">05</span>
+                <h3>默认私有</h3>
+                <p>中间结果留在沙箱；邮箱、电话等字段先变成 <code>[EMAIL_1]</code>、<code>[PHONE_1]</code>，真实数据仍写入目标系统。</p>
+                <div class="token-list">
+                  <span>[EMAIL_1]</span>
+                  <span>[PHONE_1]</span>
+                  <span>[NAME_1]</span>
+                </div>
+              </article>
+
+              <article class="cm-card tech-tip" tabindex="0" data-tip="把验证过的脚本保存为 ./skills 下的可复用函数，并补一个 SKILL.md，让 Agent 逐步建立自己的工具箱。">
+                <span class="cm-index">06</span>
+                <h3>沉淀为 Skill</h3>
+                <p>验证过的脚本存进 <code>./skills</code>，补一个 <code>SKILL.md</code>，下次直接复用，而不是重新推导。</p>
+                <pre class="cm-code">skills/
+└── save-sheet-as-csv/
+    ├── SKILL.md
+    └── save-sheet-as-csv.ts</pre>
+              </article>
+            </div>
+
+            <div class="codemode-foot">
+              <p><b>代价同样真实：</b>执行模型生成的代码需要沙箱、资源上限、网络出口控制和监控。Anthropic 明确把这部分列为额外运维成本；Code Mode 不是免费优化，而是把 token 成本换成执行环境成本。</p>
+              <div class="codemode-links">
+                <a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank" rel="noopener noreferrer">Anthropic 原文 ↗</a>
+                <a href="https://blog.cloudflare.com/code-mode/" target="_blank" rel="noopener noreferrer">Cloudflare Code Mode ↗</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="assembly-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">ASSEMBLY PIPELINE · 装配管线</p>
+                <h2 id="assembly-title">从一个 server URL 到一次可用调用</h2>
+              </div>
+              <p class="section-intro">连接不是配置文件的附属品，而是一条有发现、目录、授权、快照和执行的生命周期。</p>
+            </div>
+            <ol class="pipeline-track pipeline-eight">
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="配置声明本地命令或远程 URL、超时与协议版本策略；凭据放在配置之外，由安全存储或 OAuth 流程管理。">
+                <span class="pipeline-index">01</span>
+                <h3>配置</h3>
+                <p>声明 command 或 URL、超时与版本策略；凭据不写进普通配置。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="server/discover 可选地返回支持的版本、能力与 instructions；每个请求仍要携带 _meta，不能依赖连接上的前置状态。">
+                <span class="pipeline-index">02</span>
+                <h3>发现</h3>
+                <p>server/discover 预取版本与能力；每请求再带 _meta。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="通过 tools/list、resources/templates/list、prompts/list 建立目录，并用 subscriptions/listen 打开目录或资源通知流。">
+                <span class="pipeline-index">03</span>
+                <h3>建目录</h3>
+                <p>拉取工具、资源模板与提示，用 subscriptions/listen 订阅变更。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="工具按 server 命名空间暴露；可以选择直接注入模型清单，也可以生成 Code Mode 文件树供按需读取。">
+                <span class="pipeline-index">04</span>
+                <h3>归一</h3>
+                <p>统一命名为 <code>&lt;server&gt;_&lt;tool&gt;</code>，或生成 Code Mode 文件树。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="远程连接使用 OAuth 2.1 + PKCE，令牌绑定 audience；权限按 server、工具和动作逐项判定，敏感调用请求用户同意。">
+                <span class="pipeline-index">05</span>
+                <h3>授权</h3>
+                <p>OAuth + PKCE、绑定 audience、逐 server / 逐工具授权。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="每次模型请求捕获稳定的模型与工具快照；之后的重载只影响未来请求，避免同一次推理中工具集合漂移。">
+                <span class="pipeline-index">06</span>
+                <h3>快照</h3>
+                <p>模型、工具定义与权限规则冻结在这一轮请求里。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="执行时带上超时、进度、取消和结果上限；遇到 input_required 先补输入再重发原请求，完整输出可落盘，模型只接收必要片段。">
+                <span class="pipeline-index">07</span>
+                <h3>执行</h3>
+                <p>调用、进度、取消与超时；必要时补输入后重发，结果先过滤。</p>
+              </li>
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="记录调用来源、参数摘要、耗时、结果状态与错误；server 异常、权限拒绝和版本漂移都要能被定位。">
+                <span class="pipeline-index">08</span>
+                <h3>审计</h3>
+                <p>记录来源、耗时、结果状态与错误，支持回放与追责。</p>
+              </li>
+            </ol>
+          </section>
+
+          <section class="section-block" aria-labelledby="risks-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">FAILURE MODES · 失败模式</p>
+                <h2 id="risks-title">MCP 架构最容易坏在哪里</h2>
+              </div>
+              <p class="section-intro">协议解决“怎么连”，不自动解决“连多少、信多少、传多少”。下面这些问题通常成对出现。</p>
+            </div>
+            <div class="matrix-wrap">
+              <table class="matrix">
+                <thead>
+                  <tr>
+                    <th scope="col">风险</th>
+                    <th scope="col">表现</th>
+                    <th scope="col">根因</th>
+                    <th scope="col">对策</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>上下文爆炸</strong><span class="sub">Tool overload</span></td>
+                    <td>还没提问就消耗几十万 tokens，首 token 延迟变长</td>
+                    <td>所有工具定义在启动时一次性注入</td>
+                    <td>Code Mode 文件树、<code>search_tools</code>、按需加载</td>
+                  </tr>
+                  <tr>
+                    <td><strong>中间结果污染</strong><span class="sub">Result bloat</span></td>
+                    <td>大文档、整张表两次穿过模型，甚至超出窗口</td>
+                    <td>每次调用结果都回填上下文</td>
+                    <td>沙箱过滤 / 聚合、只返回摘要、超长输出落盘</td>
+                  </tr>
+                  <tr>
+                    <td><strong>工具投毒</strong><span class="sub">Prompt injection</span></td>
+                    <td>工具描述或返回内容里夹带指令，诱导模型越权</td>
+                    <td>把 server 输出当可信指令</td>
+                    <td>视为不可信数据、最小权限、敏感动作人工确认</td>
+                  </tr>
+                  <tr>
+                    <td><strong>越权代理</strong><span class="sub">Confused deputy</span></td>
+                    <td>Server 拿用户令牌去调用别的 API</td>
+                    <td>令牌透传、audience 不绑定</td>
+                    <td>OAuth audience 绑定、最小 scope、禁止 token passthrough</td>
+                  </tr>
+                  <tr>
+                    <td><strong>连接误解</strong><span class="sub">Stateless confusion</span></td>
+                    <td>复用连接或进程被当成会话，跨任务串状态</td>
+                    <td>依赖连接上的前置状态</td>
+                    <td>每请求 _meta、显式任务句柄、连接不绑定会话</td>
+                  </tr>
+                  <tr>
+                    <td><strong>失控循环</strong><span class="sub">Runaway loop</span></td>
+                    <td>轮询、重试或工具互相调用耗尽预算</td>
+                    <td>每个检查点都往返模型</td>
+                    <td>代码内循环、超时 / 取消、调用次数与成本上限</td>
+                  </tr>
+                  <tr>
+                    <td><strong>版本漂移</strong><span class="sub">Capability drift</span></td>
+                    <td>昨天能用的字段今天消失，客户端静默失败</td>
+                    <td>请求未带版本 / 能力、目录变更未订阅</td>
+                    <td>每请求 _meta、server/discover、能力门控、subscriptions/listen</td>
+                  </tr>
+                  <tr>
+                    <td><strong>供应链风险</strong><span class="sub">Supply chain</span></td>
+                    <td>恶意 server 或依赖包获得本机权限与网络出口</td>
+                    <td>直接安装、无隔离、无出口控制</td>
+                    <td>锁版本、审核来源、沙箱隔离、网络出口白名单</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="guards-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">GUARDRAILS · 三层护栏</p>
+                <h2 id="guards-title">协议、执行、上下文，各管一段</h2>
+              </div>
+              <p class="section-intro">授权解决“谁能用”，沙箱解决“能碰什么”，上下文策略解决“模型能看到多少”。三者不能互相替代。</p>
+            </div>
+            <div class="mcp-guard-grid">
+              <article class="mcp-guard">
+                <span class="guard-tag">PROTOCOL</span>
+                <h3>协议护栏</h3>
+                <ul class="guard-list">
+                  <li>远程连接使用 TLS；stdio 只启动可信的本地命令。</li>
+                  <li>OAuth 2.1 + PKCE；按 RFC 8707 绑定 resource / audience，禁止透传。</li>
+                  <li>逐 server 授权与登出；HTTP 校验 Origin，令牌绑定用户。</li>
+                  <li>只使用请求中声明且服务端返回的能力；版本不兼容即拒绝。</li>
+                </ul>
+              </article>
+              <article class="mcp-guard">
+                <span class="guard-tag">EXECUTION</span>
+                <h3>执行护栏</h3>
+                <ul class="guard-list">
+                  <li>Code Mode 在沙箱或隔离运行时执行，限制 CPU、内存与时长。</li>
+                  <li>文件访问走显式目录授权或沙箱边界；网络出口按域名 / 端口白名单。</li>
+                  <li>敏感动作与写操作要求人工确认，并保留参数摘要。</li>
+                  <li>记录工具来源、调用链、结果状态与失败原因，支持回放。</li>
+                </ul>
+              </article>
+              <article class="mcp-guard">
+                <span class="guard-tag">CONTEXT</span>
+                <h3>上下文护栏</h3>
+                <ul class="guard-list">
+                  <li>工具定义按需加载；优先给目录和摘要，而不是全量 schema。</li>
+                  <li>结果先过滤、聚合、截断；完整内容落盘并给引用。</li>
+                  <li>PII 在进入模型前 token 化，在 MCP 边界再还原。</li>
+                  <li>每轮锁定模型与工具快照，逼近预算时压缩或分派子会话。</li>
+                </ul>
+              </article>
+            </div>
+          </section>
+
+          <section class="section-block" aria-labelledby="checklist-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">DESIGN CHECKLIST · 落地清单</p>
+                <h2 id="checklist-title">接入下一个 MCP Server 前</h2>
+              </div>
+              <p class="section-intro">六个问题回答清楚，架构基本就稳了；回答不清，通常会在上下文或权限上付出代价。</p>
+            </div>
+            <div class="check-grid">
+              <article class="check-card tech-tip" tabindex="0" data-tip="一个 server 最好只包一个系统边界；工具数量、命名和返回结构要稳定，避免把整个 SaaS 套件塞进一个 namespace。">
+                <span class="check-no">01</span>
+                <h3>边界是否单一</h3>
+                <p>一个 server 对应一个系统，工具命名与返回结构稳定。</p>
+              </article>
+              <article class="check-card tech-tip" tabindex="0" data-tip="默认按需加载，而不是把全部工具定义注入每一次请求；为模型提供目录、摘要和搜索入口。">
+                <span class="check-no">02</span>
+                <h3>默认是否按需</h3>
+                <p>目录 + 摘要 + 搜索，而不是启动时注入全部 schema。</p>
+              </article>
+              <article class="check-card tech-tip" tabindex="0" data-tip="为每个工具定义结果上限、分页和落盘策略；不要让模型在上下文里手工过滤上万行数据。">
+                <span class="check-no">03</span>
+                <h3>结果是否有上限</h3>
+                <p>截断、分页、过滤与落盘规则先于接入写清楚。</p>
+              </article>
+              <article class="check-card tech-tip" tabindex="0" data-tip="每个远程 server 的令牌都要绑定 audience 与最小 scope；不要把用户令牌当作通用通行证。">
+                <span class="check-no">04</span>
+                <h3>令牌是否绑定</h3>
+                <p>audience、scope、过期时间与登出路径都可验证。</p>
+              </article>
+              <article class="check-card tech-tip" tabindex="0" data-tip="调用日志至少记录 server、工具、参数摘要、耗时、结果状态与拒绝原因，才能定位是协议、权限还是数据问题。">
+                <span class="check-no">05</span>
+                <h3>调用是否可审计</h3>
+                <p>来源、参数摘要、耗时、状态与拒绝原因都能回放。</p>
+              </article>
+              <article class="check-card tech-tip" tabindex="0" data-tip="把 server 当作可替换的依赖：有版本、有契约测试、有降级路径，避免单个集成绑死整个 Agent。">
+                <span class="check-no">06</span>
+                <h3>是否可替换</h3>
+                <p>版本锁定、契约测试、降级路径与离线兜底。</p>
+              </article>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>ETHAN WILKINS · MCP ARCHITECTURE</span>
+        <span class="footer-links"><a href="index.html">← 技术栈总览</a> <b>×</b> <a href="agent.html">Agent 架构</a> <b>×</b> <a href="https://modelcontextprotocol.io/specification/2026-07-28" target="_blank" rel="noopener noreferrer">MCP 规范 ↗</a></span>
+      </footer>
+    </div>
+  </body>
+</html>

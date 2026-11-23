@@ -247,6 +247,10 @@ h1 span {
   padding-bottom: 4px;
   flex: 0 0 auto;
 }
+@media (min-width: 961px) {
+  .intro-main { flex: 1 1 auto; }
+  .intro-aside { flex: 0 1 400px; min-width: 0; }
+}
 .version-pill {
   display: inline-flex;
   align-items: center;
@@ -1381,6 +1385,13 @@ h1 { font-size: clamp(44px, 5.4vw, 70px); letter-spacing: -.065em; }
   font-size: 9px !important;
   line-height: 1.55 !important;
 }
+.module-link {
+  color: #2f6b5c;
+  font-weight: 700;
+  text-decoration: none;
+}
+.module-link:hover { color: var(--green-deep); }
+.module-link:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 3px; }
 
 .protocol-lifecycle {
   display: flex;
