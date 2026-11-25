@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f5f7f2">
-    <meta name="description" content="MCP 架构图谱：从 Host、Client、Server 三层角色，到 JSON-RPC 生命周期、Tools / Resources / Prompts 原语、传输与授权，再到把工具变成代码的 Code Mode 上下文经济学。">
-    <title>MCP 架构图谱 · 协议、上下文与 Code Mode</title>
+    <meta name="description" content="MCP 架构图谱：从 Host、Client、Server 三层角色与无状态 JSON-RPC，到 Skills / Tools / Resources 三层能力、Tasks / Elicitation / File Uploads 协作面，再到 Code Mode 上下文经济学。">
+    <title>MCP 架构图谱 · 协议、协作面与 Code Mode</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="mcp.css">
     <script src="tooltips.js" defer></script>
@@ -32,8 +32,8 @@
           <div class="intro-row">
             <div class="intro-main">
               <h1 id="page-title">MCP <span>架构图谱</span></h1>
-              <p class="intro-copy">从 Host、Client、Server 三层角色，到无状态 JSON-RPC 请求、四种核心原语、传输与授权，再到把工具变成代码的 Code Mode——把协议层、上下文预算和执行边界放在同一张图上。</p>
-              <p class="version-note">以 MCP 规范 2026-07-28（无状态请求）为参照 · 悬停或聚焦条目查看说明</p>
+              <p class="intro-copy">从 Host、Client、Server 三层角色，到无状态 JSON-RPC 与 Skills / Tools / Resources 三层能力，再到 Tasks、Elicitation、File Uploads 与 Code Mode 的协作面——把协议层、上下文预算和执行边界放在同一张图上。</p>
+              <p class="version-note">以 MCP 规范 2026-07-28 与 2026-11 Skills / Tasks / File Uploads 更新为参照 · 悬停或聚焦条目查看说明</p>
             </div>
             <div class="intro-aside">
               <div class="version-pill"><span class="status-dot"></span> MCP <strong>JSON-RPC 2.0</strong> <span>2026-07-28</span></div>
@@ -41,10 +41,12 @@
                 <span class="stack-chip chip-host">Host</span>
                 <span class="stack-chip chip-client">Client</span>
                 <span class="stack-chip chip-server">Server</span>
-                <span class="stack-chip chip-mcp">stdio / HTTP</span>
+                <span class="stack-chip chip-skills">Skills</span>
+                <span class="stack-chip chip-tasks">Tasks</span>
+                <span class="stack-chip chip-elicitation">Elicitation</span>
+                <span class="stack-chip chip-files">File Uploads</span>
+                <span class="stack-chip chip-apps">MCP Apps</span>
                 <span class="stack-chip chip-code">Code Mode</span>
-                <span class="stack-chip chip-sandbox">Sandbox</span>
-                <span class="stack-chip chip-auth">OAuth</span>
               </div>
             </div>
           </div>
@@ -59,7 +61,7 @@
           </div>
           <div class="trunk" aria-hidden="true"></div>
 
-          <p class="flow-caption">两条路径 · TWO PATHS</p>
+          <p class="flow-caption">三条路径 · THREE PATHS</p>
           <div class="flow-paths">
             <div class="flow-path">
               <span class="flow-path-label"><b>CALL</b> 直接调用</span>
@@ -93,6 +95,22 @@
                 <span class="flow-step flow-mcp">精简结果</span>
                 <span class="flow-link" aria-hidden="true">→</span>
                 <span class="flow-step">模型</span>
+              </div>
+            </div>
+            <div class="flow-path">
+              <span class="flow-path-label"><b>COLLAB</b> 协作</span>
+              <div class="flow-ribbon" aria-label="MCP 协作路径">
+                <span class="flow-step flow-ui">Skill 加载</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">工具调用</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">Task 委派</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-mcp">Elicitation</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step">File 交换</span>
+                <span class="flow-link" aria-hidden="true">→</span>
+                <span class="flow-step flow-core">结果回收</span>
               </div>
             </div>
           </div>
@@ -163,6 +181,7 @@
                 </ul>
               </article>
             </div>
+            <p class="role-note">协作面没有改变三角色：Skill 由 Server 发布，Task 由 Client 持有句柄并回收，Elicitation 仍通过 Client 回到 Host 的用户。</p>
           </section>
 
           <section class="section-block" aria-labelledby="protocol-title">
@@ -232,9 +251,9 @@
             <div class="section-head">
               <div>
                 <p class="section-kicker">PRIMITIVES · 原语</p>
-                <h2 id="primitives-title">四种核心原语，外加可协商扩展</h2>
+                <h2 id="primitives-title">四种核心原语，四种协作扩展</h2>
               </div>
-              <p class="section-intro">Tools 由模型决定，Resources 由应用决定，Prompts 由用户决定；Elicitation 把补充输入的请求送回 Host。Tasks 与 Skills 等扩展按 capability 协商。</p>
+              <p class="section-intro">Tools 由模型决定，Resources 由应用决定，Prompts 由用户决定；Elicitation 把补充输入送回 Host。Tasks、Skills、File Uploads 与 MCP Apps 按 capability 协商，把 server 从工具目录扩展成协作对端。</p>
             </div>
 
             <div class="primitive-grid">
@@ -321,9 +340,159 @@
                   <li><b>上下文</b> 命中后才加载</li>
                 </ul>
               </article>
+
+              <article class="primitive-card tech-tip" tabindex="0" data-tip="File Uploads 让 PDF、表格和图片直接交给 Server，不经过模型上下文；Server 返回文件引用或结构化结果。">
+                <div class="primitive-head">
+                  <span class="primitive-index">07</span>
+                  <span class="dir-badge dir-ext">EXT</span>
+                </div>
+                <h3>File Uploads</h3>
+                <p>把 PDF、表格与图片直接交给 server，不穿过上下文窗口；结果以引用或结构化数据返回。</p>
+                <ul class="primitive-meta">
+                  <li><b>控制</b> 双方协商</li>
+                  <li><b>方式</b> File Uploads 扩展</li>
+                  <li><b>上下文</b> 文件不进上下文</li>
+                </ul>
+              </article>
+
+              <article class="primitive-card tech-tip" tabindex="0" data-tip="MCP Apps 把完整界面嵌进对话或全屏，让 Server 输出图表、表单、播放器与交互面板，而不只是一段文本。">
+                <div class="primitive-head">
+                  <span class="primitive-index">08</span>
+                  <span class="dir-badge dir-ext">EXT</span>
+                </div>
+                <h3>MCP Apps</h3>
+                <p>把图表、表单与播放器等完整界面带进对话或全屏，让 server 的结果可直接操作。</p>
+                <ul class="primitive-meta">
+                  <li><b>控制</b> 双方协商</li>
+                  <li><b>方式</b> MCP Apps 扩展</li>
+                  <li><b>上下文</b> UI 资源按需加载</li>
+                </ul>
+              </article>
             </div>
 
-            <p class="primitive-footnote">另有 <code>completions</code>、<code>progress</code>、<code>cancellation</code> 等通用能力；Sampling、Roots 与 Logging 在 2026-07-28 已弃用，旧实现仍可能通过早期修订版暴露它们。扩展始终需要双方显式声明。</p>
+            <p class="primitive-footnote">状态（2026-11）：Skills over MCP 产品公测、扩展 Beta；Tasks 与 Elicitation 在 Claude 产品中 GA（Tasks 扩展 Beta，目标 Core）；File Uploads 逐步开放、扩展 Experimental；MCP Apps 扩展 Stable。另有 <code>completions</code>、<code>progress</code>、<code>cancellation</code> 等通用能力；Sampling、Roots 与 Logging 在 2026-07-28 已弃用。</p>
+          </section>
+
+          <section class="section-block" aria-labelledby="collab-title">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">COLLABORATION · 协作面</p>
+                <h2 id="collab-title">把 Server 当成另一个 Agent</h2>
+              </div>
+              <p class="section-intro">工具只回答“能做什么”。生产环境还要回答“怎么做、做多久、做到一半找谁确认、文件怎么给”。这不是让 server 变成 Agent，而是补齐 Agent 间协作的接口——Skills、Tasks、Elicitation 与 File Uploads 把这四件事补上。</p>
+            </div>
+
+            <div class="cap-stack">
+              <article class="cap-layer cap-skills tech-tip" tabindex="0" data-tip="Skills 是领域知识与工作流：最佳实践、步骤、组织 playbook。它随 server 发布，命中任务才加载，不需要用户单独安装。">
+                <span class="cap-index">L1</span>
+                <div class="cap-info">
+                  <span class="cap-kicker">KNOW-HOW</span>
+                  <h3>Skills <span>怎么做</span></h3>
+                  <p>领域知识、最佳实践、步骤与组织 playbook；按需加载，随 server 更新，不需要单独安装。</p>
+                </div>
+                <ul class="cap-tags">
+                  <li>最佳实践</li>
+                  <li>工作流</li>
+                  <li>playbook</li>
+                </ul>
+              </article>
+
+              <article class="cap-layer cap-tools tech-tip" tabindex="0" data-tip="Tools 是 Server 暴露的动作：查询、写入、调用外部 API。它们回答“能做什么”，也是权限与审计的主要对象。">
+                <span class="cap-index">L2</span>
+                <div class="cap-info">
+                  <span class="cap-kicker">ACTION</span>
+                  <h3>Tools <span>做什么</span></h3>
+                  <p>可执行动作、副作用与外部系统调用；输入由 schema 定义，结果回到 Agent。</p>
+                </div>
+                <ul class="cap-tags">
+                  <li>查询</li>
+                  <li>写入</li>
+                  <li>调用</li>
+                </ul>
+              </article>
+
+              <article class="cap-layer cap-resources tech-tip" tabindex="0" data-tip="Resources 是 URI 可寻址的上下文：文档、记录、附件与模板。它们回答“看什么”，由应用决定何时读取。">
+                <span class="cap-index">L3</span>
+                <div class="cap-info">
+                  <span class="cap-kicker">CONTEXT</span>
+                  <h3>Resources <span>看什么</span></h3>
+                  <p>URI 可寻址的上下文与文件；应用决定何时读取，适合文档、记录与附件。</p>
+                </div>
+                <ul class="cap-tags">
+                  <li>文档</li>
+                  <li>记录</li>
+                  <li>附件</li>
+                </ul>
+              </article>
+            </div>
+
+            <p class="collab-caption">三层是能力供给，四种动作是协作方式：<b>学方法、派长活、问用户、换文件</b>。</p>
+
+            <div class="move-grid">
+              <article class="move-card move-learn tech-tip" tabindex="0" data-tip="Skills over MCP 让 Server 把技能与工具一起发布；客户端只在需要时加载技能，开发者不必再单独分发安装包。">
+                <div class="move-head">
+                  <span class="move-tag">LEARN</span>
+                  <span class="move-status is-beta">BETA</span>
+                </div>
+                <h3>学习 <span>Skills over MCP</span></h3>
+                <p>server 把技能与工具一起发布；Agent 按需加载技能，按 server 的步骤使用工具与资源。</p>
+                <p class="move-example">Shopify · HubSpot · Atlassian · Carta</p>
+              </article>
+
+              <article class="move-card move-delegate tech-tip" tabindex="0" data-tip="Tasks 让 Server 在后台执行耗时操作，甚至完整 agent loop；Agent 继续工作，之后按持久句柄回收结果。">
+                <div class="move-head">
+                  <span class="move-tag">DELEGATE</span>
+                  <span class="move-status is-ga">GA</span>
+                </div>
+                <h3>委派 <span>Tasks</span></h3>
+                <p>耗时操作甚至完整 agent loop 交给 server 后台执行；Agent 继续工作，按句柄回收结果。</p>
+                <p class="move-example">ZoomInfo 深挖账户与联系人</p>
+              </article>
+
+              <article class="move-card move-ask tech-tip" tabindex="0" data-tip="Elicitation 让 Server 在调用中途暂停，通过表单或链接请用户确认敏感操作或补充参数，然后继续原请求。">
+                <div class="move-head">
+                  <span class="move-tag">ASK</span>
+                  <span class="move-status is-ga">GA</span>
+                </div>
+                <h3>追问 <span>Elicitation</span></h3>
+                <p>执行到一半暂停，用表单或链接确认花费、删除或补参数，再继续原请求。</p>
+                <p class="move-example">Supabase · Railway · GitHub</p>
+              </article>
+
+              <article class="move-card move-exchange tech-tip" tabindex="0" data-tip="File Uploads 让 PDF、表格与图片直接交给 Server，不经过模型上下文；Server 返回文件引用或结构化结果。">
+                <div class="move-head">
+                  <span class="move-tag">EXCHANGE</span>
+                  <span class="move-status is-roll">ROLLING OUT</span>
+                </div>
+                <h3>交换 <span>File Uploads</span></h3>
+                <p>PDF、表格与图片直接交给 server，不经过上下文窗口；server 返回引用或结构化结果。</p>
+                <p class="move-example">PDF · XLSX · 图片</p>
+              </article>
+            </div>
+
+            <p class="collab-status-note">BETA / GA / ROLLING OUT 为 Claude 产品状态（2026-11），不等同于协议扩展阶段：Tasks 扩展 Beta、目标 Core，MCP Apps Stable，File Uploads Experimental。</p>
+
+            <div class="platform-strip">
+              <article class="platform-card">
+                <span class="platform-tag">CONTEXT</span>
+                <h3>Tool Search</h3>
+                <p>只加载检索到的工具定义；多 server 场景可减少 85%+ 的工具上下文。</p>
+              </article>
+              <article class="platform-card">
+                <span class="platform-tag">AUTH</span>
+                <h3>Enterprise Managed Auth</h3>
+                <p>Stable 扩展：管理员一次授权受支持的 server，用户连接时自动完成认证。</p>
+              </article>
+              <article class="platform-card">
+                <span class="platform-tag">UI</span>
+                <h3>MCP Apps</h3>
+                <p>Stable 扩展：图表、表单与播放器进入对话或全屏，让输出可以直接操作。</p>
+              </article>
+            </div>
+
+            <p class="collab-caption is-final">一句话选择：教方法用 Skills，做长活用 Tasks，要确认用 Elicitation，传文件用 File Uploads，嵌界面用 MCP Apps。</p>
+            <p class="collab-stat"><b>700M+</b> 月 SDK 下载 <span>·</span> <b>10,000+</b> Claude MCP connectors <span>·</span> 生态读数（2026-11）</p>
+            <p class="collab-sources">来源：<a href="https://claude.com/resources/articles/skills-over-mcp-tasks-and-more" target="_blank" rel="noopener noreferrer">Claude · MCP servers can now ship skills, run tasks, and more ↗</a> <span>·</span> <a href="https://modelcontextprotocol.io/extensions/overview" target="_blank" rel="noopener noreferrer">MCP Extensions ↗</a>（2026-11-24）</p>
           </section>
 
           <section class="section-block" aria-labelledby="context-title">
@@ -428,6 +597,21 @@ console.log(pending.slice(<span class="s">0</span>, <span class="s">5</span>));<
               </article>
             </div>
 
+            <div class="context-bridge">
+              <article class="bridge-card">
+                <span class="bridge-tag">TOOL SEARCH</span>
+                <h3>少加载定义</h3>
+                <p>只把检索到的工具定义放进上下文；多 server 场景可减少 85%+ 的工具上下文。</p>
+                <b>85%+</b>
+              </article>
+              <article class="bridge-card">
+                <span class="bridge-tag">CODE MODE</span>
+                <h3>少回传结果</h3>
+                <p>工具变文件，中间结果留在沙箱；同一任务示例从 150k 降到 2k。</p>
+                <b>98.7%</b>
+              </article>
+            </div>
+
             <div class="codemode-foot">
               <p><b>代价同样真实：</b>执行模型生成的代码需要沙箱、资源上限、网络出口控制和监控。Anthropic 明确把这部分列为额外运维成本；Code Mode 不是免费优化，而是把 token 成本换成执行环境成本。</p>
               <div class="codemode-links">
@@ -456,35 +640,35 @@ console.log(pending.slice(<span class="s">0</span>, <span class="s">5</span>));<
                 <h3>发现</h3>
                 <p>server/discover 预取版本与能力；每请求再带 _meta。</p>
               </li>
-              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="通过 tools/list、resources/templates/list、prompts/list 建立目录，并用 subscriptions/listen 打开目录或资源通知流。">
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="通过 tools/list、resources/templates/list、prompts/list 建立目录，连同 server 发布的 skills 一起纳入；用 subscriptions/listen 打开变更通知流。">
                 <span class="pipeline-index">03</span>
                 <h3>建目录</h3>
-                <p>拉取工具、资源模板与提示，用 subscriptions/listen 订阅变更。</p>
+                <p>拉取工具、资源、提示与 skills，用 subscriptions/listen 订阅变更。</p>
               </li>
               <li class="pipeline-stage tech-tip" tabindex="0" data-tip="工具按 server 命名空间暴露；可以选择直接注入模型清单，也可以生成 Code Mode 文件树供按需读取。">
                 <span class="pipeline-index">04</span>
                 <h3>归一</h3>
                 <p>统一命名为 <code>&lt;server&gt;_&lt;tool&gt;</code>，或生成 Code Mode 文件树。</p>
               </li>
-              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="远程连接使用 OAuth 2.1 + PKCE，令牌绑定 audience；权限按 server、工具和动作逐项判定，敏感调用请求用户同意。">
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="远程连接使用 OAuth 2.1 + PKCE，令牌绑定 audience；企业可用 Managed Auth 一次授权；权限按 server、工具和动作逐项判定。">
                 <span class="pipeline-index">05</span>
                 <h3>授权</h3>
-                <p>OAuth + PKCE、绑定 audience、逐 server / 逐工具授权。</p>
+                <p>OAuth + PKCE、绑定 audience、逐 server / 逐工具授权；企业可托管认证。</p>
               </li>
-              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="每次模型请求捕获稳定的模型与工具快照；之后的重载只影响未来请求，避免同一次推理中工具集合漂移。">
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="每次模型请求捕获稳定的模型、工具定义、Skill 摘要与权限快照；之后的重载只影响未来请求，避免同一次推理中能力集合漂移。">
                 <span class="pipeline-index">06</span>
                 <h3>快照</h3>
-                <p>模型、工具定义与权限规则冻结在这一轮请求里。</p>
+                <p>模型、工具、Skill 摘要与权限规则冻结在这一轮请求里。</p>
               </li>
-              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="执行时带上超时、进度、取消和结果上限；遇到 input_required 先补输入再重发原请求，完整输出可落盘，模型只接收必要片段。">
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="执行时带上超时、进度、取消和结果上限；长任务交给 Tasks，文件走 File Uploads，遇到 input_required 先补输入再重发原请求。">
                 <span class="pipeline-index">07</span>
                 <h3>执行</h3>
-                <p>调用、进度、取消与超时；必要时补输入后重发，结果先过滤。</p>
+                <p>短调用直接执行；长任务交给 Tasks，文件走 File Uploads，必要时补输入。</p>
               </li>
-              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="记录调用来源、参数摘要、耗时、结果状态与错误；server 异常、权限拒绝和版本漂移都要能被定位。">
+              <li class="pipeline-stage tech-tip" tabindex="0" data-tip="记录调用来源、参数摘要、耗时、结果状态、任务句柄与文件引用；server 异常、权限拒绝和版本漂移都要能被定位。">
                 <span class="pipeline-index">08</span>
                 <h3>审计</h3>
-                <p>记录来源、耗时、结果状态与错误，支持回放与追责。</p>
+                <p>记录调用、任务句柄、文件引用、结果状态与错误，支持回放。</p>
               </li>
             </ol>
           </section>
@@ -551,6 +735,24 @@ console.log(pending.slice(<span class="s">0</span>, <span class="s">5</span>));<
                     <td>每请求 _meta、server/discover、能力门控、subscriptions/listen</td>
                   </tr>
                   <tr>
+                    <td><strong>长任务失联</strong><span class="sub">Async task loss</span></td>
+                    <td>后台任务完成时客户端已换代，结果无人认领</td>
+                    <td>依赖连接或内存回收任务</td>
+                    <td>持久任务 ID、幂等、完成通知、超时与重放</td>
+                  </tr>
+                  <tr>
+                    <td><strong>文件绕过审查</strong><span class="sub">File exfil</span></td>
+                    <td>文件不经过上下文，却夹带恶意内容或超出权限</td>
+                    <td>只把文件当普通数据传输</td>
+                    <td>类型 / 大小限制、扫描、隔离存储、最小权限</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Skill 漂移</strong><span class="sub">Skill drift</span></td>
+                    <td>server 更新 skill 后，Agent 行为悄悄改变</td>
+                    <td>技能随 server 更新且无版本感知</td>
+                    <td>版本 / 摘要、变更通知、回归测试与审计</td>
+                  </tr>
+                  <tr>
                     <td><strong>供应链风险</strong><span class="sub">Supply chain</span></td>
                     <td>恶意 server 或依赖包获得本机权限与网络出口</td>
                     <td>直接安装、无隔离、无出口控制</td>
@@ -576,7 +778,7 @@ console.log(pending.slice(<span class="s">0</span>, <span class="s">5</span>));<
                 <ul class="guard-list">
                   <li>远程连接使用 TLS；stdio 只启动可信的本地命令。</li>
                   <li>OAuth 2.1 + PKCE；按 RFC 8707 绑定 resource / audience，禁止透传。</li>
-                  <li>逐 server 授权与登出；HTTP 校验 Origin，令牌绑定用户。</li>
+                  <li>逐 server 授权与登出；HTTP 校验 Origin，令牌绑定用户；企业可用 Managed Auth。</li>
                   <li>只使用请求中声明且服务端返回的能力；版本不兼容即拒绝。</li>
                 </ul>
               </article>
@@ -585,16 +787,16 @@ console.log(pending.slice(<span class="s">0</span>, <span class="s">5</span>));<
                 <h3>执行护栏</h3>
                 <ul class="guard-list">
                   <li>Code Mode 在沙箱或隔离运行时执行，限制 CPU、内存与时长。</li>
-                  <li>文件访问走显式目录授权或沙箱边界；网络出口按域名 / 端口白名单。</li>
-                  <li>敏感动作与写操作要求人工确认，并保留参数摘要。</li>
-                  <li>记录工具来源、调用链、结果状态与失败原因，支持回放。</li>
+                  <li>文件访问走显式目录授权或沙箱边界；File Uploads 校验类型、大小与来源。</li>
+                  <li>网络出口按域名 / 端口白名单；敏感动作与写操作要求人工确认。</li>
+                  <li>记录工具来源、任务句柄、文件引用、结果状态与失败原因。</li>
                 </ul>
               </article>
               <article class="mcp-guard">
                 <span class="guard-tag">CONTEXT</span>
                 <h3>上下文护栏</h3>
                 <ul class="guard-list">
-                  <li>工具定义按需加载；优先给目录和摘要，而不是全量 schema。</li>
+                  <li>工具定义、Skill 与文件都按需加载；优先给目录、摘要与引用。</li>
                   <li>结果先过滤、聚合、截断；完整内容落盘并给引用。</li>
                   <li>PII 在进入模型前 token 化，在 MCP 边界再还原。</li>
                   <li>每轮锁定模型与工具快照，逼近预算时压缩或分派子会话。</li>
@@ -617,25 +819,25 @@ console.log(pending.slice(<span class="s">0</span>, <span class="s">5</span>));<
                 <h3>边界是否单一</h3>
                 <p>一个 server 对应一个系统，工具命名与返回结构稳定。</p>
               </article>
-              <article class="check-card tech-tip" tabindex="0" data-tip="默认按需加载，而不是把全部工具定义注入每一次请求；为模型提供目录、摘要和搜索入口。">
+              <article class="check-card tech-tip" tabindex="0" data-tip="默认按需加载，而不是把全部工具定义注入每一次请求；工具、Skill 与文件都应提供目录、摘要或引用入口。">
                 <span class="check-no">02</span>
                 <h3>默认是否按需</h3>
-                <p>目录 + 摘要 + 搜索，而不是启动时注入全部 schema。</p>
+                <p>工具、Skill 与文件按需加载，而不是启动时全量注入。</p>
               </article>
-              <article class="check-card tech-tip" tabindex="0" data-tip="为每个工具定义结果上限、分页和落盘策略；不要让模型在上下文里手工过滤上万行数据。">
+              <article class="check-card tech-tip" tabindex="0" data-tip="为每个工具定义结果上限、分页和落盘策略；文件交给 File Uploads，不要让模型在上下文里手工过滤上万行数据。">
                 <span class="check-no">03</span>
                 <h3>结果是否有上限</h3>
-                <p>截断、分页、过滤与落盘规则先于接入写清楚。</p>
+                <p>结果截断、分页、落盘；文件不要塞进上下文。</p>
               </article>
               <article class="check-card tech-tip" tabindex="0" data-tip="每个远程 server 的令牌都要绑定 audience 与最小 scope；不要把用户令牌当作通用通行证。">
                 <span class="check-no">04</span>
                 <h3>令牌是否绑定</h3>
                 <p>audience、scope、过期时间与登出路径都可验证。</p>
               </article>
-              <article class="check-card tech-tip" tabindex="0" data-tip="调用日志至少记录 server、工具、参数摘要、耗时、结果状态与拒绝原因，才能定位是协议、权限还是数据问题。">
+              <article class="check-card tech-tip" tabindex="0" data-tip="调用日志至少记录 server、工具、任务句柄、文件引用、参数摘要、耗时、结果状态与拒绝原因，才能定位是协议、权限还是数据问题。">
                 <span class="check-no">05</span>
                 <h3>调用是否可审计</h3>
-                <p>来源、参数摘要、耗时、状态与拒绝原因都能回放。</p>
+                <p>调用、任务句柄、文件引用、状态与拒绝原因都能回放。</p>
               </article>
               <article class="check-card tech-tip" tabindex="0" data-tip="把 server 当作可替换的依赖：有版本、有契约测试、有降级路径，避免单个集成绑死整个 Agent。">
                 <span class="check-no">06</span>
